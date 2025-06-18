@@ -77,9 +77,9 @@ step_message 5 "Allowing port 3000 in UFW"
 progress_message "Creating firewall rule"
 sudo ufw allow 3000
 # Step 6
-step_message 6 "Configuring netplan for DHCP on attached NICs"
-progress_message "Editing netplan configuration file..."
-sudo tee /etc/netplan/50-cloud-init.yaml > /dev/null <<EOL
+step_message 6 "Configuring netplan: enp1s0 with DHCP, enp2s0 with static IP"
+progress_message "Writing custom netplan configuration..."
+sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
 network:
   version: 2
   renderer: networkd
@@ -90,14 +90,21 @@ network:
       dhcp4: no
       addresses:
         - 192.168.1.100/24
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4
 EOL
-sudo chmod 600 /etc/netplan/50-cloud-init.yaml
+sudo chmod 600 /etc/netplan/00-installer-config.yaml
+sudo rm -f /etc/netplan/50-cloud-init.yaml
 sudo netplan apply
 # Step 7
 step_message 7 "Resolving VPN on Demand issue with DNS"
 progress_message "Swaping resolv.conf file link..."
 sudo unlink /etc/resolv.conf
 sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+ls -l /etc/resolv.conf
 # Step 8
 step_message 9 "Disabling cloud-init's network configuration"
 progress_message "Creating /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
