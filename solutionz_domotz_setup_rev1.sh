@@ -75,8 +75,18 @@ for permission in "${permissions[@]}"; do
 done
 # Step 5
 step_message 5 "Enabling UFW Firewall"
-progress_message "Enabling UFW..."
-sudo ufw enable
+progress_message "Installing and enabling UFW..."
+# Install UFW if not already installed
+if ! dpkg -s ufw >/dev/null 2>&1; then
+    sudo apt-get update
+    sudo apt-get install -y ufw
+    echo "UFW installed successfully."
+else
+    echo "UFW is already installed."
+fi
+# Enable UFW without interactive prompt
+sudo ufw --force enable
+# Show verbose status
 sudo ufw status verbose
 # Step 6
 step_message 6 "Allowing port 3000 in UFW"
@@ -104,6 +114,7 @@ network:
 EOL
 sudo chmod 600 /etc/netplan/00-installer-config.yaml
 sudo rm -f /etc/netplan/50-cloud-init.yaml
+sudo rm -f /etc/netplan/50-cloud-init.yaml.save
 sudo netplan apply
 # Step 8
 step_message 8 "Resolving VPN on Demand issue with DNS"
