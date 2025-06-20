@@ -12,6 +12,7 @@ echo "7. Resolve VPN on Demand issue with DNS"
 echo "8. Disable cloud-init's network configuration"
 echo "9. Enable and start SSH service"
 echo "10. Enable UFW"
+echo "11. Automatically append kernel parameters to GRUB config"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
@@ -73,54 +74,75 @@ for permission in "${permissions[@]}"; do
     sudo snap connect "domotzpro-agent-publicstore:$permission"
 done
 # Step 5
+step_message 10 "Enabling UFW Firewall"
+progress_message "Enabling UFW..."
+sudo ufw enable
+sudo ufw status verbose
+# Step 6
 step_message 5 "Allowing port 3000 in UFW"
 progress_message "Creating firewall rule"
 sudo ufw allow 3000
-# Step 6
-step_message 6 "Configuring netplan: enp1s0 with DHCP, enp2s0 with static IP"
-progress_message "Writing custom netplan configuration..."
+# Step 7
+step_message 6 "Configuring netplan for DHCP on attached NICs"
+progress_message "Editing netplan configuration file..."
 sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
 network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    enp1s0:
-      dhcp4: true
-    enp2s0:
-      dhcp4: no
-      addresses:
-        - 192.168.1.100/24
-      gateway4: 192.168.1.1
-      nameservers:
-        addresses:
-          - 8.8.8.8
-          - 8.8.4.4
+    version: 2
+    ethernets:
+        all-en:
+            match:
+                name: "en*"
+            dhcp4: true
+            dhcp6: false
+            accept-ra: false
+        all-eth:
+            match:
+                name: "eth*"
+            dhcp4: true
+            dhcp6: false
+            accept-ra: false
 EOL
 sudo chmod 600 /etc/netplan/00-installer-config.yaml
 sudo rm -f /etc/netplan/50-cloud-init.yaml
 sudo netplan apply
-# Step 7
+# Step 8
 step_message 7 "Resolving VPN on Demand issue with DNS"
 progress_message "Swaping resolv.conf file link..."
 sudo unlink /etc/resolv.conf
 sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 ls -l /etc/resolv.conf
-# Step 8
+# Step 9
 step_message 9 "Disabling cloud-init's network configuration"
 progress_message "Creating /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
 echo "network: {config: disabled}" | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
-# Step 9
+# Step 10
 step_message 9 "Enabling SSH Service"
 progress_message "Installing and starting OpenSSH server..."
 sudo apt install -y openssh-server
 sudo systemctl enable ssh
 sudo systemctl start ssh
 sudo systemctl status ssh --no-pager
-# Step 10
-step_message 10 "Enabling UFW Firewall"
-progress_message "Enabling UFW..."
-sudo ufw enable
-sudo ufw status verbose
+# Step 11
+GRUB_FILE="/etc/default/grub"
+PARAMS="net.ifnames=0 biosdevname=0"
+
+echo "Modifying GRUB configuration..."
+
+# Backup original GRUB file
+sudo cp "$GRUB_FILE" "${GRUB_FILE}.bak"
+
+# Check if parameters already exist
+if grep -q "$PARAMS" "$GRUB_FILE"; then
+    echo "Kernel parameters already set in GRUB config."
+else
+    # Append to GRUB_CMDLINE_LINUX
+    sudo sed -i "/^GRUB_CMDLINE_LINUX=/ s/\"\(.*\)\"/\"\1 $PARAMS\"/" "$GRUB_FILE"
+    echo "Added kernel parameters to GRUB config."
+fi
+# Apply changes and reboot
+sudo update-grub
+echo "GRUB updated. Rebooting now..."
+sudo reboot
 echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
 echo "------------------------------------------------------------"
