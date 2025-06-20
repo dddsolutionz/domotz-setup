@@ -74,16 +74,16 @@ for permission in "${permissions[@]}"; do
     sudo snap connect "domotzpro-agent-publicstore:$permission"
 done
 # Step 5
-step_message 10 "Enabling UFW Firewall"
+step_message 5 "Enabling UFW Firewall"
 progress_message "Enabling UFW..."
 sudo ufw enable
 sudo ufw status verbose
 # Step 6
-step_message 5 "Allowing port 3000 in UFW"
+step_message 6 "Allowing port 3000 in UFW"
 progress_message "Creating firewall rule"
 sudo ufw allow 3000
 # Step 7
-step_message 6 "Configuring netplan for DHCP on attached NICs"
+step_message 7 "Configuring netplan for DHCP on attached NICs"
 progress_message "Editing netplan configuration file..."
 sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
 network:
@@ -106,7 +106,7 @@ sudo chmod 600 /etc/netplan/00-installer-config.yaml
 sudo rm -f /etc/netplan/50-cloud-init.yaml
 sudo netplan apply
 # Step 8
-step_message 7 "Resolving VPN on Demand issue with DNS"
+step_message 8 "Resolving VPN on Demand issue with DNS"
 progress_message "Swaping resolv.conf file link..."
 sudo unlink /etc/resolv.conf
 sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
@@ -116,32 +116,37 @@ step_message 9 "Disabling cloud-init's network configuration"
 progress_message "Creating /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
 echo "network: {config: disabled}" | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
 # Step 10
-step_message 9 "Enabling SSH Service"
+step_message 10 "Enabling SSH Service"
 progress_message "Installing and starting OpenSSH server..."
 sudo apt install -y openssh-server
 sudo systemctl enable ssh
 sudo systemctl start ssh
 sudo systemctl status ssh --no-pager
 # Step 11
+step_message 11 "Automatically append kernel parameters to GRUB config"
+progress_message "Safely modify GRUB to disable predictable network interface names"
 GRUB_FILE="/etc/default/grub"
 PARAMS="net.ifnames=0 biosdevname=0"
-
 echo "Modifying GRUB configuration..."
-
-# Backup original GRUB file
+# Backup GRUB config
 sudo cp "$GRUB_FILE" "${GRUB_FILE}.bak"
-
-# Check if parameters already exist
-if grep -q "$PARAMS" "$GRUB_FILE"; then
-    echo "Kernel parameters already set in GRUB config."
+# Check if GRUB_CMDLINE_LINUX exists
+if grep -q "^GRUB_CMDLINE_LINUX=" "$GRUB_FILE"; then
+    # Append only if parameters are not already present
+    if ! grep -q "$PARAMS" "$GRUB_FILE"; then
+        sudo sed -i "/^GRUB_CMDLINE_LINUX=/ s/\"\(.*\)\"/\"\1 $PARAMS\"/" "$GRUB_FILE"
+        echo "Added kernel parameters to GRUB_CMDLINE_LINUX."
+    else
+        echo "Kernel parameters already set in GRUB config."
+    fi
 else
-    # Append to GRUB_CMDLINE_LINUX
-    sudo sed -i "/^GRUB_CMDLINE_LINUX=/ s/\"\(.*\)\"/\"\1 $PARAMS\"/" "$GRUB_FILE"
-    echo "Added kernel parameters to GRUB config."
+    # Add the line if it doesn't exist
+    echo "GRUB_CMDLINE_LINUX=\"$PARAMS\"" | sudo tee -a "$GRUB_FILE"
+    echo "Created GRUB_CMDLINE_LINUX entry with kernel parameters."
 fi
-# Apply changes and reboot
+# Apply changes
 sudo update-grub
-echo "GRUB updated. Rebooting now..."
+echo "GRUB updated. Rebooting system now..."
 sudo reboot
 echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
