@@ -78,7 +78,6 @@ step_message 5 "Enabling UFW Firewall"
 progress_message "Installing and enabling UFW..."
 # Install UFW if not already installed
 if ! dpkg -s ufw >/dev/null 2>&1; then
-    sudo apt-get update
     sudo apt-get install -y ufw
     echo "UFW installed successfully."
 else
