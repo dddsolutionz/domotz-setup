@@ -11,7 +11,7 @@ echo "6. Allow port 3000 in UFW"
 echo "7. Configure netplan for DHCP on attached NICs"
 echo "8. Resolve VPN on Demand issue with DNS"
 echo "9. Disable cloud-init's network configuration"
-echo "10. Enable and start SSH service"
+echo "10. Enable and start SSH service, install package lists..."
 echo "11. Automatically append kernel parameters to GRUB config"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
@@ -126,12 +126,17 @@ step_message 9 "Disabling cloud-init's network configuration"
 progress_message "Creating /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
 echo "network: {config: disabled}" | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
 # Step 10
-step_message 10 "Enabling SSH Service"
+step_message 10 "Enabling SSH Service, install package lists..."
 progress_message "Installing and starting OpenSSH server..."
 sudo apt install -y openssh-server
 sudo systemctl enable ssh
 sudo systemctl start ssh
 sudo systemctl status ssh --no-pager
+echo "Installing nano..."
+sudo apt install -y nano
+echo "Installing iputils-ping..."
+sudo apt install -y iputils-ping
+echo "All requested packages are installed."
 # Step 11
 step_message 11 "Automatically append kernel parameters to GRUB config"
 progress_message "Safely modify GRUB to disable predictable network interface names"
