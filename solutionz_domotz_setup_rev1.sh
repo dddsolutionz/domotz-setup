@@ -12,7 +12,8 @@ echo "7. Configure netplan for DHCP on attached NICs"
 echo "8. Resolve VPN on Demand issue with DNS"
 echo "9. Disable cloud-init's network configuration"
 echo "10. Enable and start SSH service, install package lists..."
-echo "11. Automatically append kernel parameters to GRUB config"
+echo "11. Adding hostame solzrmm if it does not exist"
+echo "12. Automatically append kernel parameters to GRUB config"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
@@ -138,7 +139,20 @@ echo "Installing iputils-ping..."
 sudo apt install -y iputils-ping
 echo "All requested packages are installed."
 # Step 11
-step_message 11 "Automatically append kernel parameters to GRUB config"
+step_message 11 "Adding hostame solzrmm if it does not exist"
+progress_message "Adding hostname solzrmm....."
+HOST_ENTRY="127.0.1.1    solzrmm"
+
+# Check if the entry already exists
+if grep -q "$HOST_ENTRY" /etc/hosts; then
+    echo "Hostname entry already exists in /etc/hosts."
+else
+    echo "Adding hostname entry to /etc/hosts..."
+    echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null
+    echo "Hostname 'solzrmm' added successfully."
+fi
+# Step 12
+step_message 12 "Automatically append kernel parameters to GRUB config"
 progress_message "Safely modify GRUB to disable predictable network interface names"
 GRUB_FILE="/etc/default/grub"
 PARAMS="net.ifnames=0 biosdevname=0"
