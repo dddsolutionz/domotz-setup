@@ -84,6 +84,9 @@ if ! dpkg -s ufw >/dev/null 2>&1; then
 else
     echo "UFW is already installed."
 fi
+# Allow SSH through UFW
+echo "Allowing SSH through UFW..."
+sudo ufw allow ssh
 # Enable UFW without interactive prompt
 sudo ufw --force enable
 # Show verbose status
