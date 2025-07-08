@@ -6,7 +6,7 @@ echo "1. Update System and install key packages"
 echo "2. Load the 'tun' module if not already loaded"
 echo "3. Install Domotz Pro agent via Snap Store"
 echo "4. Grant permissions to Domotz Pro agent"
-echo "5. Enabling UFW Firewall"
+echo "5. Enabling UFW Firewall and allow SSH"
 echo "6. Allow port 3000 in UFW"
 echo "7. Configure netplan for DHCP on attached NICs"
 echo "8. Resolve VPN on Demand issue with DNS"
@@ -30,7 +30,6 @@ if [ "$confirmation1" != "yes" ]; then
     exit 1
 fi
 echo "------------------------------------------------------------"
-
 echo "Please confirm again to proceed."
 read -p "Type 'yes' to proceed: " confirmation2
 if [ "$confirmation2" != "yes" ]; then
@@ -75,7 +74,7 @@ for permission in "${permissions[@]}"; do
     sudo snap connect "domotzpro-agent-publicstore:$permission"
 done
 # Step 5
-step_message 5 "Enabling UFW Firewall"
+step_message 5 "Enabling UFW Firewall and allow SSH"
 progress_message "Installing and enabling UFW..."
 # Install UFW if not already installed
 if ! dpkg -s ufw >/dev/null 2>&1; then
@@ -84,8 +83,8 @@ if ! dpkg -s ufw >/dev/null 2>&1; then
 else
     echo "UFW is already installed."
 fi
+progress_message "Allowing SSH through UFW..."
 # Allow SSH through UFW
-echo "Allowing SSH through UFW..."
 sudo ufw allow ssh
 # Enable UFW without interactive prompt
 sudo ufw --force enable
@@ -145,7 +144,6 @@ echo "All requested packages are installed."
 step_message 11 "Adding hostame solzrmm if it does not exist"
 progress_message "Adding hostname solzrmm....."
 HOST_ENTRY="127.0.1.1    solzrmm"
-
 # Check if the entry already exists
 if grep -q "$HOST_ENTRY" /etc/hosts; then
     echo "Hostname entry already exists in /etc/hosts."
