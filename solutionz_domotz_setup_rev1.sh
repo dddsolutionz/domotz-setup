@@ -23,19 +23,19 @@ echo "   - The script will modify system configurations and install necessary pa
 echo "   - It may update system files and settings as per its instructions."
 echo "   - Using this script on an already configured system may lead to unexpected behavior."
 echo "3. Responsibility: You are responsible for any consequences resulting from running this script."
-echo
-read -p "Type 'yes' to proceed: " confirmation1
-if [ "$confirmation1" != "yes" ]; then
-    echo "Confirmation not received. Exiting script."
-    exit 1
-fi
-echo "------------------------------------------------------------"
-echo "Please confirm again to proceed."
-read -p "Type 'yes' to proceed: " confirmation2
-if [ "$confirmation2" != "yes" ]; then
-    echo "Confirmation not received. Exiting script."
-    exit 1
-fi
+#echo
+#read -p "Type 'yes' to proceed: " confirmation1
+#if [ "$confirmation1" != "yes" ]; then
+#    echo "Confirmation not received. Exiting script."
+#    exit 1
+#fi
+#echo "------------------------------------------------------------"
+#echo "Please confirm again to proceed."
+#read -p "Type 'yes' to proceed: " confirmation2
+#if [ "$confirmation2" != "yes" ]; then
+#    echo "Confirmation not received. Exiting script."
+#    exit 1
+#fi
 # Set non-interactive mode for package configuration and disables NEEDRESTART MESSAGES
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
