@@ -209,11 +209,11 @@ sudo systemctl restart serial-getty@ttyS0.service
 progress_message "Verifying agetty process on ttyS0..."
 ps aux | grep '[a]getty' | grep ttyS0 || echo "Warning: agetty not detected on ttyS0"
 
-echo "✅ Serial console configuration completed."
+echo "Serial console configuration completed."
 
 # Apply changes
 echo "GRUB updated. Rebooting system now..."
-read -p "Press Enter to reboot now or Ctrl+C to cancel..."
+read -p "Press Enter to reboot now or Ctrl+C to cancel..." < /dev/tty
 
 # Log completion timestamp
 echo "------------------------------------------------------------"
