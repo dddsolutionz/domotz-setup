@@ -174,6 +174,26 @@ else
     echo "GRUB_CMDLINE_LINUX=\"$PARAMS\"" | sudo tee -a "$GRUB_FILE"
     echo "Created GRUB_CMDLINE_LINUX entry with kernel parameters."
 fi
+# Step 13
+step_message 13 "Configuring Serial Console Access on Protectli"
+
+progress_message "Editing GRUB configuration for serial console..."
+sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=".*"/GRUB_CMDLINE_LINUX_DEFAULT="console=tty0 console=ttyS0,115200n8"/' /etc/default/grub
+sudo update-grub
+
+progress_message "Creating systemd drop-in for serial-getty@ttyS0..."
+sudo systemctl edit serial-getty@ttyS0 <<EOF
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -L 115200 %I vt102
+EOF
+
+progress_message "Enabling and starting serial-getty@ttyS0 service..."
+sudo systemctl enable serial-getty@ttyS0.service
+sudo systemctl start serial-getty@ttyS0.service
+
+echo "Serial console configuration completed."
+fi
 # Apply changes
 sudo update-grub
 echo "GRUB updated. Rebooting system now..."
