@@ -1,4 +1,8 @@
 #!/bin/bash
+set -e
+exec > >(tee -i setup.log)
+exec 2>&1
+
 # Confirmation message
 echo "------------------------------------------------------------"
 echo "This script will perform the following actions:"
@@ -12,8 +16,9 @@ echo "7. Configure netplan for DHCP on attached NICs"
 echo "8. Resolve VPN on Demand issue with DNS"
 echo "9. Disable cloud-init's network configuration"
 echo "10. Enable and start SSH service, install package lists..."
-echo "11. Adding hostame solzrmm if it does not exist"
+echo "11. Adding hostnames solzrmm and solz-rmm if they do not exist"
 echo "12. Automatically append kernel parameters to GRUB config"
+echo "13. Configuring Serial Console Access on Protectli"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
@@ -120,7 +125,7 @@ sudo rm -f /etc/netplan/50-cloud-init.yaml.save
 sudo netplan apply
 # Step 8
 step_message 8 "Resolving VPN on Demand issue with DNS"
-progress_message "Swaping resolv.conf file link..."
+progress_message "Swapping resolv.conf file link..."
 sudo unlink /etc/resolv.conf
 sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 ls -l /etc/resolv.conf
@@ -141,17 +146,22 @@ echo "Installing iputils-ping..."
 sudo apt install -y iputils-ping
 echo "All requested packages are installed."
 # Step 11
-step_message 11 "Adding hostame solzrmm if it does not exist"
-progress_message "Adding hostname solzrmm....."
-HOST_ENTRY="127.0.1.1    solzrmm"
-# Check if the entry already exists
-if grep -q "$HOST_ENTRY" /etc/hosts; then
-    echo "Hostname entry already exists in /etc/hosts."
-else
-    echo "Adding hostname entry to /etc/hosts..."
-    echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null
-    echo "Hostname 'solzrmm' added successfully."
-fi
+step_message 11 "Adding hostnames solzrmm and solz-rmm if they do not exist"
+
+progress_message "Checking and adding hostname entries to /etc/hosts..."
+
+HOST_ENTRIES=("127.0.1.1    solzrmm" "127.0.1.1    solz-rmm")
+
+for entry in "${HOST_ENTRIES[@]}"; do
+    if grep -q "$entry" /etc/hosts; then
+        echo "Hostname entry '$entry' already exists in /etc/hosts."
+    else
+        echo "Adding hostname entry '$entry' to /etc/hosts..."
+        echo "$entry" | sudo tee -a /etc/hosts > /dev/null
+        echo "Hostname entry '$entry' added successfully."
+    fi
+done
+
 # Step 12
 step_message 12 "Automatically append kernel parameters to GRUB config"
 progress_message "Safely modify GRUB to disable predictable network interface names"
@@ -174,10 +184,44 @@ else
     echo "GRUB_CMDLINE_LINUX=\"$PARAMS\"" | sudo tee -a "$GRUB_FILE"
     echo "Created GRUB_CMDLINE_LINUX entry with kernel parameters."
 fi
+# Step 13
+step_message 13 "Configuring Serial Console Access on Protectli"
+
+progress_message "Editing GRUB configuration for serial console..."
+sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=".*"/GRUB_CMDLINE_LINUX_DEFAULT="console=tty0 console=ttyS0,115200n8"/' /etc/default/grub
+
+progress_message "Creating systemd drop-in for serial-getty@ttyS0..."
+sudo mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d
+cat <<EOF | sudo tee /etc/systemd/system/serial-getty@ttyS0.service.d/override.conf > /dev/null
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -o -p -- \\u --keep-baud 115200,57600,38400,9600 ttyS0 vt220
+EOF
+
+progress_message "Reloading systemd daemon..."
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+
+progress_message "Enabling and starting serial-getty@ttyS0 service..."
+sudo systemctl enable serial-getty@ttyS0.service
+sudo systemctl restart serial-getty@ttyS0.service
+
+progress_message "Verifying agetty process on ttyS0..."
+ps aux | grep '[a]getty' | grep ttyS0 || echo "Warning: agetty not detected on ttyS0"
+
+echo "✅ Serial console configuration completed."
+
 # Apply changes
-sudo update-grub
 echo "GRUB updated. Rebooting system now..."
-sudo reboot
+read -p "Press Enter to reboot now or Ctrl+C to cancel..."
+
+# Log completion timestamp
 echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
+echo "   [+] Completion Time: $(date)"
+echo "   [+] Hostname: $(hostname)"
+echo "   [+] Script Version: v1.0"
 echo "------------------------------------------------------------"
+
+sudo update-grub
+sudo reboot
