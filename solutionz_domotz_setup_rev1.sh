@@ -56,6 +56,12 @@ progress_message() {
 }
 # Step 1
 step_message 1 "Updating System and installing key packages"
+
+progress_message "Disabling apt script warning if not already suppressed..."
+if [ ! -f /etc/apt/apt.conf.d/90disablescriptwarning ]; then
+    echo "Apt::Cmd::Disable-Script-Warning true;" | sudo tee /etc/apt/apt.conf.d/90disablescriptwarning
+fi
+
 progress_message "Updating package lists..."
 sudo apt update
 progress_message "Upgrading packages..."
