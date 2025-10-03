@@ -1,9 +1,9 @@
-### Script: `downgrade_kernel_6_8.sh`
-
-```bash
 #!/bin/bash
+set -e
 
-# Check current kernel version
+echo " Starting kernel downgrade to GA version 6.8.0"
+
+# Show current kernel
 echo "Current kernel version:"
 uname -r
 
@@ -15,7 +15,7 @@ lsb_release -a
 echo "Updating package list..."
 sudo apt update
 
-# Install GA kernel (6.8.x)
+# Install GA kernel
 echo "Installing linux-image-generic (GA kernel)..."
 sudo apt install -y linux-image-generic
 
@@ -31,15 +31,15 @@ sudo apt remove --autoremove -y \
 echo "Updating GRUB..."
 sudo update-grub
 
-# Prompt before reboot
-echo "Kernel downgrade complete."
-echo "Reboot is required to apply changes."
+# Prompt for reboot
+echo " Kernel downgrade complete."
+echo " Reboot is required to apply changes."
 read -p "Do you want to reboot now? (y/n): " confirm
 if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+  touch /tmp/kernel_upgrade_complete
+  echo "Rebooting now..."
   sudo reboot
 else
-  echo "Reboot skipped. Please reboot manually when ready."
+  echo "Reboot skipped. Please reboot manually before continuing."
+  exit 1
 fi
-```
-
----
