@@ -2,7 +2,9 @@
 # Solutionz INC RMM Connectivity Check
 # ============================
 
+Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
+Write-Host "=========================================`n"
 
 # Function to test TCP port
 function Test-TCPPort {
@@ -75,25 +77,33 @@ function Test-SSL {
     }
 }
 
-# === General Domain Health Check ===
-$generalHosts = @("portal.domotz.com", "echo.domotz.com")
-foreach ($domain in $generalHosts) {
-    Test-DNS -TargetHost $domain
-    Test-ICMP -TargetHost $domain
-    Test-HTTP -TargetHost $domain
-    Test-SSL -TargetHost $domain
-}
+# === General Connectivity ===
+Write-Host "`n--- GENERAL CONNECTIVITY ---"
+Write-Host "Checking portal.domotz.com (TCP 443)"
+Test-DNS -TargetHost "portal.domotz.com"
+Test-HTTP -TargetHost "portal.domotz.com"
+Test-SSL -TargetHost "portal.domotz.com"
 Test-TCPPort -TargetHost "portal.domotz.com" -Port 443
 
+Write-Host "`nChecking echo.domotz.com (ICMP)"
+Test-DNS -TargetHost "echo.domotz.com"
+Test-ICMP -TargetHost "echo.domotz.com"
+
 # === API Connectivity ===
+Write-Host "`n--- API CONNECTIVITY ---"
+Write-Host "North America: api-us-east-1-cell-1.domotz.com (TCP 443)"
 Test-TCPPort -TargetHost "api-us-east-1-cell-1.domotz.com" -Port 443
+
+Write-Host "Rest of World: api-eu-west-1-cell-1.domotz.com (TCP 443)"
 Test-TCPPort -TargetHost "api-eu-west-1-cell-1.domotz.com" -Port 443
 
-# === Messaging ===
+# === Messaging Services ===
+Write-Host "`n--- MESSAGING SERVICES ---"
 Test-TCPPort -TargetHost "messaging-us-east-1-cell-1.domotz.com" -Port 5671
 Test-TCPPort -TargetHost "messaging-eu-west-1-cell-1.domotz.com" -Port 5671
 
 # === Remote Connections ===
+Write-Host "`n--- REMOTE CONNECTIONS ---"
 $remoteHosts = @(
     "sshg.domotz.co",
     "us-east-1-sshg.domotz.co",
@@ -110,6 +120,7 @@ foreach ($TargetHost in $remoteHosts) {
 }
 
 # === Provisioning Channel ===
+Write-Host "`n--- PROVISIONING CHANNEL ---"
 Test-TCPPort -TargetHost "provisioning.domotz.com" -Port 4505
 Test-TCPPort -TargetHost "provisioning.domotz.com" -Port 4506
 Test-TCPPort -TargetHost "login.ubuntu.com" -Port 443
@@ -119,6 +130,7 @@ Test-TCPPort -TargetHost "api.orchestration.wl-pro.com" -Port 443
 Test-TCPPort -TargetHost "tunny.domotz.org" -Port 55022
 
 # === Updates from Canonical ===
+Write-Host "`n--- UPDATES FROM CANONICAL ---"
 $canonicalHosts = @(
     "api.snapcraft.io",
     "serial-vault-partners.canonical.com",
@@ -134,6 +146,7 @@ foreach ($TargetHost in $canonicalHosts) {
 }
 
 # === HTTPS Servers ===
+Write-Host "`n--- HTTPS SERVERS ---"
 $httpsHosts = @(
     "www.google.com",
     "www.fast.com",
@@ -145,6 +158,7 @@ foreach ($TargetHost in $httpsHosts) {
 }
 
 # === NTP Servers (UDP) ===
+Write-Host "`n--- NTP SERVERS (UDP 123) ---"
 function Test-UDPPort {
     param (
         [string]$TargetHost,
@@ -170,11 +184,14 @@ foreach ($TargetHost in $ntpHosts) {
 }
 
 # === Speedtest Services ===
+Write-Host "`n--- SPEEDTEST SERVICES ---"
 Test-TCPPort -TargetHost "api.fast.com" -Port 443
 Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
 # === Final Message ===
-Write-Host "`nThank you for your patience."
+Write-Host "`n========================================="
+Write-Host "Thank you for your patience."
 Write-Host "Solutionz INC RMM has completed the connectivity check."
 Write-Host "Please copy the text output above and send it to the Solutionz INC RMM team via email: rmmadmins@solutionzinc.com"
 Write-Host "Thank you!"
+Write-Host "=========================================`n"
