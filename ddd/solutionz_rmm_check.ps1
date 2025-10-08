@@ -187,6 +187,3 @@ Write-Host "Subject: RMM Connectivity Report from $(hostname)"
 Write-Host ""
 Write-Host "Thank you for your assistance and support!"
 Write-Host "=========================================`n"
-
-Username - DD
-Password - 1234
