@@ -168,6 +168,9 @@ Write-Host "=========================================`n"
 
 Stop-Transcript
 
+# --- Prompt for credentials ---
+$cred = Get-Credential -UserName "darrel.della@solutionzinc.com"
+
 # --- Email the log file ---
 $EmailFrom = "darrel.della@solutionzinc.com"
 $EmailTo = "darrel.della@solutionzinc.com"
@@ -183,5 +186,5 @@ Send-MailMessage -From $EmailFrom `
                  -SmtpServer $SMTPServer `
                  -Port $SMTPPort `
                  -UseSsl `
-                 -Credential $cred = Get-Credential -UserName "darrel.della@solutionzinc.com"`
+                 -Credential $cred `
                  -Attachments $logPath
