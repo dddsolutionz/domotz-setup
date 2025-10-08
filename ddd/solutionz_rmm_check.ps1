@@ -168,22 +168,23 @@ Write-Host "=========================================`n"
 
 Stop-Transcript
 
-# --- Prompt for credentials ---
-$cred = Get-Credential -UserName "darrel.della@solutionzinc.com"
+# Prompt for credentials
+$cred = Get-Credential -Message "Enter your Microsoft 365 email credentials"
 
-# --- Email the log file ---
+# Validate credential input
+if (-not $cred) {
+    Write-Host "Credential input was cancelled or failed. Email will not be sent."
+    exit
+}
+
+# Email the log file
 $EmailFrom = "darrel.della@solutionzinc.com"
 $EmailTo = "darrel.della@solutionzinc.com"
 $Subject = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 $Body = "Attached is the RMM connectivity log from $(hostname)."
 $SMTPServer = "smtp.office365.com"
 $SMTPPort = 587
- 
-# Prompt for credentials if not already defined
-if (-not $cred) {
-    $cred = Get-Credential
-}
- 
+
 Send-MailMessage -From $EmailFrom `
                  -To $EmailTo `
                  -Subject $Subject `
