@@ -167,43 +167,23 @@ Write-Host "Solutionz INC RMM has completed the connectivity check."
 Write-Host "=========================================`n"
 
 Stop-Transcript
- 
-# --- Email Settings ---
-$EmailFrom   = "darrel.della@solutionzinc.com"
-$EmailTo     = "darrel.della@solutionzinc.com"
-$Subject     = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-$Body        = "Attached is the RMM connectivity log from $(hostname)."
-$SMTPServer  = "smtp.office365.com"
-$SMTPPort    = 587
-$logPath     = "C:\Users\DARREL~1\AppData\Local\Temp\RMM_Connectivity_Log.txt"
- 
-# --- Load Credential from Secure Local File ---
-$credPath = "$env:USERPROFILE\SMTP-Cred.xml"
- 
-if (Test-Path $credPath) {
-    try {
-        $cred = Import-Clixml -Path $credPath
-    } catch {
-        Write-Host "⚠️ Failed to load credentials from $credPath. Email will not be sent."
-        return
-    }
-} else {
-    Write-Host "⚠️ Credential file not found at $credPath. Email will not be sent."
-    return
-}
- 
-# --- Send Email ---
-try {
-    Send-MailMessage -From $EmailFrom `
-                     -To $EmailTo `
-                     -Subject $Subject `
-                     -Body $Body `
-                     -SmtpServer $SMTPServer `
-                     -Port $SMTPPort `
-                     -UseSsl `
-                     -Credential $cred `
-                     -Attachments $logPath
-    Write-Host "✅ Email sent successfully."
-} catch {
-    Write-Host "❌ Failed to send email: $_"
-}
+
+# --- Define paths ---
+$logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
+$downloads = [Environment]::GetFolderPath("Downloads")
+$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
+
+# --- Create ZIP file ---
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+Compress-Archive -Path $logFile -DestinationPath $zipPath
+
+# --- Final instructions ---
+Write-Host "`n========================================="
+Write-Host "Connectivity check completed successfully."
+Write-Host "A zip file has been created: $zipPath"
+Write-Host ""
+Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
+Write-Host "Subject: RMM Connectivity Report from $(hostname)"
+Write-Host ""
+Write-Host "Thank you for your assistance and support!"
+Write-Host "=========================================`n"
