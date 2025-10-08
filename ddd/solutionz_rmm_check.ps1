@@ -170,7 +170,7 @@ Stop-Transcript
 
 # --- Define paths ---
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
-$downloads = [Environment]::GetFolderPath("Downloads")
+$downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 
 # --- Create ZIP file ---
