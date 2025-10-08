@@ -183,5 +183,5 @@ Send-MailMessage -From $EmailFrom `
                  -SmtpServer $SMTPServer `
                  -Port $SMTPPort `
                  -UseSsl `
-                 -Credential $cred `
+                 -Credential $cred = Get-Credential -UserName "darrel.della@solutionzinc.com"`
                  -Attachments $logPath
