@@ -167,30 +167,31 @@ Write-Host "Solutionz INC RMM has completed the connectivity check."
 Write-Host "=========================================`n"
 
 Stop-Transcript
+ 
 # --- Email Settings ---
-$EmailFrom = "darrel.della@solutionzinc.com"
-$EmailTo = "darrel.della@solutionzinc.com"
-$Subject = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-$Body = "Attached is the RMM connectivity log from $(hostname)."
-$SMTPServer = "smtp.office365.com"
-$SMTPPort = 587
-$logPath = "C:\Users\DARREL~1\AppData\Local\Temp\RMM_Connectivity_Log.txt"
-# --- Load Credentials ---
-$credPath = "$env:USERPROFILE\email_password.xml"
+$EmailFrom   = "darrel.della@solutionzinc.com"
+$EmailTo     = "darrel.della@solutionzinc.com"
+$Subject     = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+$Body        = "Attached is the RMM connectivity log from $(hostname)."
+$SMTPServer  = "smtp.office365.com"
+$SMTPPort    = 587
+$logPath     = "C:\Users\DARREL~1\AppData\Local\Temp\RMM_Connectivity_Log.txt"
+ 
+# --- Load Credential from Secure Local File ---
+$credPath = "$env:USERPROFILE\SMTP-Cred.xml"
+ 
 if (Test-Path $credPath) {
     try {
-        $password = Import-Clixml -Path $credPath
-        $username = "darrel.della@solutionzinc.com"
-        $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
+        $cred = Import-Clixml -Path $credPath
     } catch {
-        Write-Host " Failed to load credentials from $credPath. Email will not be sent."
+        Write-Host "⚠️ Failed to load credentials from $credPath. Email will not be sent."
         return
     }
 } else {
-    Write-Host " Credential file not found at $credPath. Email will not be sent."
+    Write-Host "⚠️ Credential file not found at $credPath. Email will not be sent."
     return
 }
-
+ 
 # --- Send Email ---
 try {
     Send-MailMessage -From $EmailFrom `
@@ -202,8 +203,7 @@ try {
                      -UseSsl `
                      -Credential $cred `
                      -Attachments $logPath
-    Write-Host " Email sent successfully."
+    Write-Host "✅ Email sent successfully."
 } catch {
-    Write-Host " Failed to send email: $_"
+    Write-Host "❌ Failed to send email: $_"
 }
-
