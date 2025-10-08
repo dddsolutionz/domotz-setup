@@ -178,7 +178,12 @@ $Subject = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 $Body = "Attached is the RMM connectivity log from $(hostname)."
 $SMTPServer = "smtp.office365.com"
 $SMTPPort = 587
-
+ 
+# Prompt for credentials if not already defined
+if (-not $cred) {
+    $cred = Get-Credential
+}
+ 
 Send-MailMessage -From $EmailFrom `
                  -To $EmailTo `
                  -Subject $Subject `
