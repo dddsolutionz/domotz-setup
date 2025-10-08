@@ -183,5 +183,5 @@ Send-MailMessage -From $EmailFrom `
                  -SmtpServer $SMTPServer `
                  -Port $SMTPPort `
                  -UseSsl `
-                 -Credential (Get-Credential) `
+                 -Credential $cred `
                  -Attachments $logPath
