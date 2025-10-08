@@ -169,8 +169,8 @@ Write-Host "=========================================`n"
 Stop-Transcript
 
 # --- Email the log file ---
-$EmailFrom = "yourname@solutionzinc.com"
-$EmailTo = "rmmadmins@solutionzinc.com"
+$EmailFrom = "darrel.della@solutionzinc.com"
+$EmailTo = "darrel.della@solutionzinc.com"
 $Subject = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 $Body = "Attached is the RMM connectivity log from $(hostname)."
 $SMTPServer = "smtp.office365.com"
