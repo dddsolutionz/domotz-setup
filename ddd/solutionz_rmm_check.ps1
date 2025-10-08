@@ -1,17 +1,18 @@
 # ============================
-# Solutionz INC RMM Connectivity Check
+# Solutionz INC RMM Connectivity Check with Logging and Email
 # ============================
+
+# --- Setup log file ---
+$logPath = "$env:TEMP\RMM_Connectivity_Log.txt"
+Start-Transcript -Path $logPath -Append
 
 Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
 Write-Host "=========================================`n"
 
-# Function to test TCP port
+# --- Test Functions ---
 function Test-TCPPort {
-    param (
-        [string]$TargetHost,
-        [int]$Port
-    )
+    param ([string]$TargetHost, [int]$Port)
     try {
         $tcpClient = New-Object System.Net.Sockets.TcpClient
         $tcpClient.Connect($TargetHost, $Port)
@@ -22,11 +23,8 @@ function Test-TCPPort {
     }
 }
 
-# Function to test ICMP ping
 function Test-ICMP {
-    param (
-        [string]$TargetHost
-    )
+    param ([string]$TargetHost)
     if (Test-Connection -ComputerName $TargetHost -Count 2 -Quiet) {
         Write-Host "$TargetHost - ICMP REACHABLE"
     } else {
@@ -34,11 +32,8 @@ function Test-ICMP {
     }
 }
 
-# Function to test DNS resolution
 function Test-DNS {
-    param (
-        [string]$TargetHost
-    )
+    param ([string]$TargetHost)
     try {
         $dns = Resolve-DnsName -Name $TargetHost -ErrorAction Stop
         Write-Host "$TargetHost - DNS RESOLVED to $($dns[0].IPAddress)"
@@ -47,11 +42,8 @@ function Test-DNS {
     }
 }
 
-# Function to test HTTP response
 function Test-HTTP {
-    param (
-        [string]$TargetHost
-    )
+    param ([string]$TargetHost)
     try {
         $response = Invoke-WebRequest -Uri "https://$TargetHost" -UseBasicParsing -TimeoutSec 5
         Write-Host "$TargetHost - HTTP RESPONSE: $($response.StatusCode)"
@@ -60,11 +52,8 @@ function Test-HTTP {
     }
 }
 
-# Function to test SSL certificate
 function Test-SSL {
-    param (
-        [string]$TargetHost
-    )
+    param ([string]$TargetHost)
     try {
         $tcpClient = New-Object System.Net.Sockets.TcpClient($TargetHost, 443)
         $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream(), $false, ({ $true }))
@@ -77,9 +66,20 @@ function Test-SSL {
     }
 }
 
-# === General Connectivity ===
+function Test-UDPPort {
+    param ([string]$TargetHost, [int]$Port)
+    try {
+        $udpClient = New-Object System.Net.Sockets.UdpClient
+        $udpClient.Connect($TargetHost, $Port)
+        $udpClient.Close()
+        Write-Host "${TargetHost}:${Port} - UDP SENT (no response expected)"
+    } catch {
+        Write-Host "${TargetHost}:${Port} - UDP FAILED"
+    }
+}
+
+# --- Connectivity Checks ---
 Write-Host "`n--- GENERAL CONNECTIVITY ---"
-Write-Host "Checking portal.domotz.com (TCP 443)"
 Test-DNS -TargetHost "portal.domotz.com"
 Test-HTTP -TargetHost "portal.domotz.com"
 Test-SSL -TargetHost "portal.domotz.com"
@@ -89,20 +89,14 @@ Write-Host "`nChecking echo.domotz.com (ICMP)"
 Test-DNS -TargetHost "echo.domotz.com"
 Test-ICMP -TargetHost "echo.domotz.com"
 
-# === API Connectivity ===
 Write-Host "`n--- API CONNECTIVITY ---"
-Write-Host "North America: api-us-east-1-cell-1.domotz.com (TCP 443)"
 Test-TCPPort -TargetHost "api-us-east-1-cell-1.domotz.com" -Port 443
-
-Write-Host "Rest of World: api-eu-west-1-cell-1.domotz.com (TCP 443)"
 Test-TCPPort -TargetHost "api-eu-west-1-cell-1.domotz.com" -Port 443
 
-# === Messaging Services ===
 Write-Host "`n--- MESSAGING SERVICES ---"
 Test-TCPPort -TargetHost "messaging-us-east-1-cell-1.domotz.com" -Port 5671
 Test-TCPPort -TargetHost "messaging-eu-west-1-cell-1.domotz.com" -Port 5671
 
-# === Remote Connections ===
 Write-Host "`n--- REMOTE CONNECTIONS ---"
 $remoteHosts = @(
     "sshg.domotz.co",
@@ -112,14 +106,12 @@ $remoteHosts = @(
     "ap-southeast-2-sshg.domotz.co"
 )
 $samplePorts = @(32700, 40000, 50000, 57699)
-
 foreach ($TargetHost in $remoteHosts) {
     foreach ($Port in $samplePorts) {
         Test-TCPPort -TargetHost $TargetHost -Port $Port
     }
 }
 
-# === Provisioning Channel ===
 Write-Host "`n--- PROVISIONING CHANNEL ---"
 Test-TCPPort -TargetHost "provisioning.domotz.com" -Port 4505
 Test-TCPPort -TargetHost "provisioning.domotz.com" -Port 4506
@@ -129,7 +121,6 @@ Test-TCPPort -TargetHost "messaging.orchestration.domotz.com" -Port 5671
 Test-TCPPort -TargetHost "api.orchestration.wl-pro.com" -Port 443
 Test-TCPPort -TargetHost "tunny.domotz.org" -Port 55022
 
-# === Updates from Canonical ===
 Write-Host "`n--- UPDATES FROM CANONICAL ---"
 $canonicalHosts = @(
     "api.snapcraft.io",
@@ -145,7 +136,6 @@ foreach ($TargetHost in $canonicalHosts) {
     Test-TCPPort -TargetHost $TargetHost -Port 443
 }
 
-# === HTTPS Servers ===
 Write-Host "`n--- HTTPS SERVERS ---"
 $httpsHosts = @(
     "www.google.com",
@@ -157,23 +147,7 @@ foreach ($TargetHost in $httpsHosts) {
     Test-TCPPort -TargetHost $TargetHost -Port 443
 }
 
-# === NTP Servers (UDP) ===
 Write-Host "`n--- NTP SERVERS (UDP 123) ---"
-function Test-UDPPort {
-    param (
-        [string]$TargetHost,
-        [int]$Port
-    )
-    try {
-        $udpClient = New-Object System.Net.Sockets.UdpClient
-        $udpClient.Connect($TargetHost, $Port)
-        $udpClient.Close()
-        Write-Host "${TargetHost}:${Port} - UDP SENT (no response expected)"
-    } catch {
-        Write-Host "${TargetHost}:${Port} - UDP FAILED"
-    }
-}
-
 $ntpHosts = @(
     "ntp.ubuntu.com",
     "0.pool.ntp.org",
@@ -183,15 +157,31 @@ foreach ($TargetHost in $ntpHosts) {
     Test-UDPPort -TargetHost $TargetHost -Port 123
 }
 
-# === Speedtest Services ===
 Write-Host "`n--- SPEEDTEST SERVICES ---"
 Test-TCPPort -TargetHost "api.fast.com" -Port 443
 Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
-# === Final Message ===
 Write-Host "`n========================================="
 Write-Host "Thank you for your patience."
 Write-Host "Solutionz INC RMM has completed the connectivity check."
-Write-Host "Please copy the text output above and send it to the Solutionz INC RMM team via email: rmmadmins@solutionzinc.com"
-Write-Host "Thank you!"
 Write-Host "=========================================`n"
+
+Stop-Transcript
+
+# --- Email the log file ---
+$EmailFrom = "yourname@solutionzinc.com"
+$EmailTo = "rmmadmins@solutionzinc.com"
+$Subject = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+$Body = "Attached is the RMM connectivity log from $(hostname)."
+$SMTPServer = "smtp.office365.com"
+$SMTPPort = 587
+
+Send-MailMessage -From $EmailFrom `
+                 -To $EmailTo `
+                 -Subject $Subject `
+                 -Body $Body `
+                 -SmtpServer $SMTPServer `
+                 -Port $SMTPPort `
+                 -UseSsl `
+                 -Credential (Get-Credential) `
+                 -Attachments $logPath
