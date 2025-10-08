@@ -167,30 +167,43 @@ Write-Host "Solutionz INC RMM has completed the connectivity check."
 Write-Host "=========================================`n"
 
 Stop-Transcript
-
-# Prompt for credentials
-$cred = Get-Credential -Message "Enter your Microsoft 365 email credentials"
-
-# Validate credential input
-if (-not $cred) {
-    Write-Host "Credential input was cancelled or failed. Email will not be sent."
-    exit
-}
-
-# Email the log file
+# --- Email Settings ---
 $EmailFrom = "darrel.della@solutionzinc.com"
 $EmailTo = "darrel.della@solutionzinc.com"
 $Subject = "RMM Connectivity Report - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 $Body = "Attached is the RMM connectivity log from $(hostname)."
 $SMTPServer = "smtp.office365.com"
 $SMTPPort = 587
+$logPath = "C:\Users\DARREL~1\AppData\Local\Temp\RMM_Connectivity_Log.txt"
+# --- Load Credentials ---
+$credPath = "$env:USERPROFILE\email_password.xml"
+if (Test-Path $credPath) {
+    try {
+        $password = Import-Clixml -Path $credPath
+        $username = "darrel.della@solutionzinc.com"
+        $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
+    } catch {
+        Write-Host " Failed to load credentials from $credPath. Email will not be sent."
+        return
+    }
+} else {
+    Write-Host " Credential file not found at $credPath. Email will not be sent."
+    return
+}
 
-Send-MailMessage -From $EmailFrom `
-                 -To $EmailTo `
-                 -Subject $Subject `
-                 -Body $Body `
-                 -SmtpServer $SMTPServer `
-                 -Port $SMTPPort `
-                 -UseSsl `
-                 -Credential $cred `
-                 -Attachments $logPath
+# --- Send Email ---
+try {
+    Send-MailMessage -From $EmailFrom `
+                     -To $EmailTo `
+                     -Subject $Subject `
+                     -Body $Body `
+                     -SmtpServer $SMTPServer `
+                     -Port $SMTPPort `
+                     -UseSsl `
+                     -Credential $cred `
+                     -Attachments $logPath
+    Write-Host " Email sent successfully."
+} catch {
+    Write-Host " Failed to send email: $_"
+}
+
