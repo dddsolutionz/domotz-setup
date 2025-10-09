@@ -15,8 +15,9 @@ Welcome to the Solutionz INC diagnostic script.
 '@
 Write-Host $logo -ForegroundColor Cyan
 
-# --- Start transcript AFTER logo ---
-Start-Transcript -Path "$env:TEMP\RMM_Connectivity_Log.txt"
+# --- Setup log file ---
+$logPath = "$env:TEMP\RMM_Connectivity_Log.txt"
+Start-Transcript -Path $logPath -Append
 
 Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
