@@ -19,25 +19,29 @@ Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
 Write-Host "=========================================`n"
 
-# --- Start transcript AFTER intro ---
+# --- Define file paths ---
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
-$transcriptStarted = $false
+$downloads = Join-Path $env:USERPROFILE "Downloads"
+$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
+$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
+# --- Start transcript safely ---
+$transcriptStarted = $false
 if ($host.Name -notmatch 'ISE') {
     try {
         Start-Transcript -Path $logFile
         $transcriptStarted = $true
     } catch {
-        Write-Host "Transcript could not be started: $($_.Exception.Message)"
+        # Silent fail — don't print transcript errors
     }
-} else {
-    Write-Host "Transcript not supported in PowerShell ISE."
 }
 
-
-Write-Host "`n========================================="
-Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
-Write-Host "=========================================`n"
+try {
+    Start-Transcript -Path $logFile
+    $transcriptStarted = $true
+} catch {
+    # Do not print anything here — silent fail
+}
 
 # --- Test Functions ---
 function Test-TCPPort {
@@ -231,4 +235,15 @@ $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 Copy-Item -Path $logFile -Destination $logCopyPath -Force
 
 $maxRetries = 5
-$retryCount
+$retryCount = 0
+$success = $false
+
+while (-not $success -and $retryCount -lt $maxRetries) {
+    try {
+        Compress-Archive -Path $logCopyPath -DestinationPath $zipPath
+        $success = $true
+    } catch {
+        Start-Sleep -Seconds 1
+        $retryCount++
+    }
+}
