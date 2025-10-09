@@ -31,7 +31,13 @@ try {
     Start-Transcript -Path $logFile
     $transcriptStarted = $true
 } catch {
-    # Silent fail
+# --- DEVICE INFO ---
+Write-Host "`n--- DEVICE INFORMATION ---"
+# (IP block here)
+
+# --- TRACE ROUTE ---
+Write-Host "`n--- TRACE ROUTE TO portal.domotz.com ---"
+# (Traceroute block here)
 }
 
 # --- Test Functions ---
