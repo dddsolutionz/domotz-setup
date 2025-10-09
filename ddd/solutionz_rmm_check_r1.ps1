@@ -206,6 +206,10 @@ while (-not $success -and $retryCount -lt $maxRetries) {
 
 # --- Final instructions ---
 Write-Host "`n========================================="
+Write-Host "Thank you for your patience."
+Write-Host "Solutionz INC RMM has completed the connectivity check."
+Write-Host "========================================="
+
 if ($success) {
     Write-Host "Connectivity check completed successfully."
     Write-Host "A zip file has been created: $zipPath"
