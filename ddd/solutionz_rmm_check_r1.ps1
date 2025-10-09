@@ -15,9 +15,9 @@ Welcome to the Solutionz INC diagnostic script.
 '@
 Write-Host $logo -ForegroundColor Cyan
 
-Write-Host "`n========================================="
+Write-Host "`n======================================================================"
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
-Write-Host "=========================================`n"
+Write-Host "========================================================================`n"
 
 # --- Define file paths ---
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
@@ -196,7 +196,7 @@ Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
 Write-Host "`n========================================="
 Write-Host "Connectivity check completed."
-Write-Host "========================================="
+Write-Host "==========================================="
 
 if ($success) {
     Write-Host "A ZIP file has been created:"
@@ -231,8 +231,6 @@ if ($transcriptStarted) {
 # --- Create ZIP file with retry logic ---
 $downloads = Join-Path $env:USERPROFILE "Downloads"
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
-
-Copy-Item -Path $logFile -Destination $logCopyPath -Force
 
 $maxRetries = 5
 $retryCount = 0
