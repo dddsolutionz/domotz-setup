@@ -20,7 +20,7 @@ Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment.
 Write-Host "========================================================================`n"
 
 # --- Define file paths ---
-$logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
+$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 
