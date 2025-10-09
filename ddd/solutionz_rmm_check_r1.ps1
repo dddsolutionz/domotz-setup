@@ -25,19 +25,26 @@ $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
-# --- Start transcript ---
+# Start transcript
 $transcriptStarted = $false
 try {
     Start-Transcript -Path $logFile
     $transcriptStarted = $true
-} catch {
-# --- DEVICE INFO ---
+} catch {}
+
+# --- DEVICE INFORMATION ---
 Write-Host "`n--- DEVICE INFORMATION ---"
-# (IP block here)
+Get-NetIPAddress |
+    Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.IPAddress -notlike '169.*' } |
+    ForEach-Object {
+        Write-Host "Interface: $($_.InterfaceAlias) - IP Address: $($_.IPAddress)"
+    }
 
 # --- TRACE ROUTE ---
 Write-Host "`n--- TRACE ROUTE TO portal.domotz.com ---"
-# (Traceroute block here)
+$trace = Test-NetConnection -ComputerName "portal.domotz.com" -TraceRoute
+$trace.TraceRoute | ForEach-Object { Write-Host $_ }
+
 }
 
 # --- Test Functions ---
@@ -222,9 +229,7 @@ if ($transcriptStarted) {
     try {
         Stop-Transcript
         Start-Sleep -Seconds 2
-    } catch {
-        # Silent fail
-    }
+    } catch {}
 }
 
 # --- Create ZIP file from copied log ---
