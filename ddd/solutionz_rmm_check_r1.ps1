@@ -23,7 +23,7 @@ try {
     Start-Transcript -Path $logFile
     $transcriptStarted = $true
 } catch {
-    Write-Host "⚠️ Transcript could not be started: $($_.Exception.Message)"
+    Write-Host "Transcript could not be started: $($_.Exception.Message)"
 }
 
 Write-Host "`n========================================="
@@ -192,7 +192,7 @@ if ($transcriptStarted) {
         Stop-Transcript
         Start-Sleep -Seconds 2
     } catch {
-        Write-Host "⚠️ Transcript could not be stopped: $($_.Exception.Message)"
+        Write-Host "Transcript could not be stopped: $($_.Exception.Message)"
     }
 }
 
