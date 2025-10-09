@@ -25,7 +25,7 @@ $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
-# Start transcript
+# --- Start transcript ---
 $transcriptStarted = $false
 try {
     Start-Transcript -Path $logFile
@@ -140,7 +140,7 @@ $remoteHosts = @(
     "us-west-2-sshg.domotz.co",
     "ap-southeast-2-sshg.domotz.co"
 )
-$samplePorts = @(32700, 40000, 50000, 57699)
+$samplePorts = @(32700, 40000, 50000, 57699, 443, 80)
 foreach ($TargetHost in $remoteHosts) {
     foreach ($Port in $samplePorts) {
         Test-TCPPort -TargetHost $TargetHost -Port $Port
@@ -196,6 +196,33 @@ Write-Host "`n--- SPEEDTEST SERVICES ---"
 Test-TCPPort -TargetHost "api.fast.com" -Port 443
 Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
+# --- Stop transcript ---
+if ($transcriptStarted) {
+    try {
+        Stop-Transcript
+        Start-Sleep -Seconds 2
+    } catch {}
+}
+
+# --- Create ZIP file from copied log ---
+Copy-Item -Path $logFile -Destination $logCopyPath -Force
+
+$maxRetries = 5
+$retryCount = 0
+$success = $false
+
+while (-not $success -and $retryCount -lt $maxRetries) {
+    try {
+        Compress-Archive -Path $logCopyPath -DestinationPath $zipPath -Force
+        Remove-Item $logCopyPath -Force
+        $success = $true
+    } catch {
+        Start-Sleep -Seconds 1
+        $retryCount++
+    }
+}
+
+# --- Final Instructions ---
 Write-Host "`n========================================="
 Write-Host "Connectivity check completed."
 Write-Host "========================================="
@@ -205,60 +232,4 @@ if ($success) {
     Write-Host "$zipPath"
     Write-Host ""
     Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
-    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-    Write-Host ""
-    Write-Host "Thank you for your time and support in verifying your connection."
-    Write-Host "Have a wonderful day! 🙂"
-} else {
-    Write-Host "ZIP file creation failed."
-    Write-Host "Please manually attach the log file located at:"
-    Write-Host "$logFile"
-    Write-Host ""
-    Write-Host "Email to: rmmadmins@solutionzinc.com"
-    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-}
-Write-Host "=========================================`n"
-
-# Auto-open Downloads folder
-Start-Process $downloads
-
-# Stop transcript
-if ($transcriptStarted) {
-    try {
-        Stop-Transcript
-        Start-Sleep -Seconds 2
-    } catch {}
-}
-
-# --- Create ZIP file from copied log ---
-$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
-Copy-Item -Path $logFile -Destination $logCopyPath -Force
-
-try {
-    Compress-Archive -Path $logCopyPath -DestinationPath $zipPath -Force
-    Remove-Item $logCopyPath -Force
-    $success = $true
-} catch {
-    $success = $false
-}
-
-# --- Confirm success ---
-$success = Test-Path $zipPath
-
-# --- Create ZIP file with retry logic ---
-$downloads = Join-Path $env:USERPROFILE "Downloads"
-$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
-
-$maxRetries = 5
-$retryCount = 0
-$success = $false
-
-while (-not $success -and $retryCount -lt $maxRetries) {
-    try {
-        Compress-Archive -Path $logCopyPath -DestinationPath $zipPath
-        $success = $true
-    } catch {
-        Start-Sleep -Seconds 1
-        $retryCount++
-    }
-}
+    Write-Host "Subject:
