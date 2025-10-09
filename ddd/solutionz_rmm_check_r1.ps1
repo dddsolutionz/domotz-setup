@@ -25,23 +25,27 @@ $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
-# --- Start transcript safely ---
+# --- Start transcript ---
 $transcriptStarted = $false
-if ($host.Name -notmatch 'ISE') {
-    try {
-        Start-Transcript -Path $logFile
-        $transcriptStarted = $true
-    } catch {
-        # Silent fail — don't print transcript errors
-    }
-}
-
 try {
     Start-Transcript -Path $logFile
     $transcriptStarted = $true
 } catch {
-    # Do not print anything here — silent fail
+    # Silent fail
 }
+
+# ... your diagnostic logic here ...
+
+# --- Stop transcript ---
+if ($transcriptStarted) {
+    try {
+        Stop-Transcript
+        Start-Sleep -Seconds 2
+    } catch {
+        # Silent fail
+    }
+}
+
 
 # --- Test Functions ---
 function Test-TCPPort {
@@ -204,8 +208,6 @@ if ($success) {
     Write-Host ""
     Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
     Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-    Write-Host ""
-    Write-Host "Thank you for your assistance and support!"
 } else {
     Write-Host "ZIP file creation failed."
     Write-Host "Please manually attach the log file located at:"
@@ -231,6 +233,8 @@ $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 Copy-Item -Path $logFile -Destination $logCopyPath -Force
 Compress-Archive -Path $logCopyPath -DestinationPath $zipPath
 Remove-Item $logCopyPath -Force
+$success = Test-Path $zipPath
+
 
 # --- Confirm success ---
 $success = Test-Path $zipPath
