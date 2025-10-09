@@ -23,7 +23,6 @@ Write-Host "====================================================================
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
 $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
-$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
 # --- Start transcript ---
 $transcriptStarted = $false
@@ -46,6 +45,16 @@ if ($transcriptStarted) {
     }
 }
 
+if (Test-Path $logFile) {
+    try {
+        Compress-Archive -Path $logFile -DestinationPath $zipPath -Force
+        $success = $true
+    } catch {
+        $success = $false
+    }
+} else {
+    $success = $false
+}
 
 # --- Test Functions ---
 function Test-TCPPort {
@@ -217,6 +226,9 @@ if ($success) {
     Write-Host "Subject: RMM Connectivity Report from $(hostname)"
 }
 Write-Host "=========================================`n"
+
+# Auto-open Downloads folder
+Start-Process $downloads
 
 # --- Stop transcript safely ---
 if ($transcriptStarted) {
