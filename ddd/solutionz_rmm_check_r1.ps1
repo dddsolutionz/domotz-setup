@@ -187,8 +187,27 @@ Test-TCPPort -TargetHost "api.fast.com" -Port 443
 Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
 Write-Host "`n========================================="
-Write-Host "Thank you for your patience."
-Write-Host "Solutionz INC RMM has completed the connectivity check."
+Write-Host "Connectivity check completed."
+Write-Host "========================================="
+
+if ($success) {
+    Write-Host "A ZIP file has been created:"
+    Write-Host "$zipPath"
+    Write-Host ""
+    Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
+    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
+    Write-Host ""
+    Write-Host "Thank you for your assistance and support!"
+} else {
+    Write-Host "ZIP file creation failed after $maxRetries attempts."
+    Write-Host "Please manually attach the log file located at:"
+    Write-Host "$logFile"
+    Write-Host ""
+    Write-Host "Email to: rmmadmins@solutionzinc.com"
+    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
+    Write-Host ""
+    Write-Host "Thank you for your assistance and support!"
+}
 Write-Host "=========================================`n"
 
 # --- Stop transcript safely ---
