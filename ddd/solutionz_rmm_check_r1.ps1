@@ -2,7 +2,7 @@
 # Solutionz INC RMM Connectivity Check
 # ============================
 
-# --- Display logo (not included in transcript) ---
+# --- Display logo and welcome (excluded from transcript) ---
 $logo = @'
   _____   ____    _      _    _   _____   _    ____   __     __
  / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
@@ -15,7 +15,11 @@ Welcome to the Solutionz INC diagnostic script.
 '@
 Write-Host $logo -ForegroundColor Cyan
 
-# --- Setup transcript ---
+Write-Host "`n========================================="
+Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
+Write-Host "=========================================`n"
+
+# --- Start transcript AFTER intro ---
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
 $transcriptStarted = $false
 
@@ -24,10 +28,10 @@ if ($host.Name -notmatch 'ISE') {
         Start-Transcript -Path $logFile
         $transcriptStarted = $true
     } catch {
-        Write-Host "Transcript could not be started: $($_.Exception.Message)"
+        Write-Host "⚠️ Transcript could not be started: $($_.Exception.Message)"
     }
 } else {
-    Write-Host "Transcript not supported in PowerShell ISE."
+    Write-Host "⚠️ Transcript not supported in PowerShell ISE."
 }
 
 
