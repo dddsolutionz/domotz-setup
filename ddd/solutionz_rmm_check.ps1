@@ -2,6 +2,22 @@
 # Solutionz INC RMM Connectivity Check with Logging and Email
 # ============================
 
+# ============================================
+# SOLUTIONZ INC - Script Header Logo
+# ============================================
+
+$logo = @'
+  ███████╗ ██████╗ ██╗      ██████╗ ██╗   ██╗████████╗ ██████╗ ███╗   ██╗███████╗
+  ██╔════╝██╔═══██╗██║     ██╔═══██╗██║   ██║╚══██╔══╝██╔═══██╗████╗  ██║██╔════╝
+  █████╗  ██║   ██║██║     ██║   ██║██║   ██║   ██║   ██║   ██║██╔██╗ ██║█████╗  
+  ██╔══╝  ██║   ██║██║     ██║   ██║██║   ██║   ██║   ██║   ██║██║╚██╗██║██╔══╝  
+  ██║     ╚██████╔╝███████╗╚██████╔╝╚██████╔╝   ██║   ╚██████╔╝██║ ╚████║███████╗
+  ╚═╝      ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+'@
+
+Write-Host $logo -ForegroundColor Cyan
+Write-Host "`nWelcome to the Solutionz INC diagnostic script.`n"
+
 # --- Setup log file ---
 $logPath = "$env:TEMP\RMM_Connectivity_Log.txt"
 Start-Transcript -Path $logPath -Append
