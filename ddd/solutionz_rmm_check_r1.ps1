@@ -178,16 +178,31 @@ Write-Host "Thank you for your patience."
 Write-Host "Solutionz INC RMM has completed the connectivity check."
 Write-Host "=========================================`n"
 
+# --- Stop transcript and wait briefly ---
 Stop-Transcript
+Start-Sleep -Seconds 2  # Give the system time to release the file lock
 
 # --- Define paths ---
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
 $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 
-# --- Create ZIP file ---
+# --- Create ZIP file with retry logic ---
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-Compress-Archive -Path $logFile -DestinationPath $zipPath
+
+$maxRetries = 5
+$retryCount = 0
+$success = $false
+
+while (-not $success -and $retryCount -lt $maxRetries) {
+    try {
+        Compress-Archive -Path $logFile -DestinationPath $zipPath
+        $success = $true
+    } catch {
+        Start-Sleep -Seconds 1
+        $retryCount++
+    }
+}
 
 # --- Final instructions ---
 Write-Host "`n========================================="
