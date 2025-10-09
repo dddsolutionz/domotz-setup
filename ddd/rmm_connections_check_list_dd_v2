@@ -1,8 +1,8 @@
-param([switch]$Silent)
-
 # ============================
 # Solutionz INC RMM Connectivity Check
 # ============================
+
+param([switch]$Silent)
 
 # --- Display logo and welcome (excluded from transcript) ---
 $logo = @'
