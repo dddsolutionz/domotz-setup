@@ -140,7 +140,7 @@ $remoteHosts = @(
     "us-west-2-sshg.domotz.co",
     "ap-southeast-2-sshg.domotz.co"
 )
-$samplePorts = @(32700, 40000, 50000, 57699, 443, 80)
+$samplePorts = @(32700, 40000, 50000, 57699, 22)
 foreach ($TargetHost in $remoteHosts) {
     foreach ($Port in $samplePorts) {
         Test-TCPPort -TargetHost $TargetHost -Port $Port
