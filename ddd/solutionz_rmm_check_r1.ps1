@@ -19,12 +19,17 @@ Write-Host $logo -ForegroundColor Cyan
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
 $transcriptStarted = $false
 
-try {
-    Start-Transcript -Path $logFile
-    $transcriptStarted = $true
-} catch {
-    Write-Host "Transcript could not be started: $($_.Exception.Message)"
+if ($host.Name -notmatch 'ISE') {
+    try {
+        Start-Transcript -Path $logFile
+        $transcriptStarted = $true
+    } catch {
+        Write-Host "Transcript could not be started: $($_.Exception.Message)"
+    }
+} else {
+    Write-Host "Transcript not supported in PowerShell ISE."
 }
+
 
 Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
