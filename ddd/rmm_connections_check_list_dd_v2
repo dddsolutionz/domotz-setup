@@ -60,6 +60,18 @@ function Test-TCPPort {
     }
 }
 
+function Test-UDPPort {
+    param ([string]$TargetHost, [int]$Port)
+    try {
+        $udpClient = New-Object System.Net.Sockets.UdpClient
+        $udpClient.Connect($TargetHost, $Port)
+        $udpClient.Close()
+        Write-Host "${TargetHost}:${Port} - UDP SENT (no response expected)"
+    } catch {
+        Write-Host "${TargetHost}:${Port} - UDP FAILED"
+    }
+}
+
 function Test-ICMP {
     param ([string]$TargetHost)
     if (Test-Connection -ComputerName $TargetHost -Count 2 -Quiet) {
@@ -102,8 +114,6 @@ function Test-SSL {
         Write-Host "$TargetHost - SSL CERT INVALID"
     }
 }
-$totalSteps = $remoteHosts.Count * ($samplePorts.Count + 1)
-$currentStep = 0
 
 function Show-ProgressBar {
     param([int]$PercentComplete)
@@ -111,6 +121,9 @@ function Show-ProgressBar {
     $space = " " * (20 - ($PercentComplete / 5))
     Write-Host ("[{0}{1}] {2}%" -f $bar, $space, $PercentComplete)
 }
+
+$totalSteps = $remoteHosts.Count * ($samplePorts.Count + 1)
+$currentStep = 0
 
 foreach ($TargetHost in $remoteHosts) {
     $currentStep++
