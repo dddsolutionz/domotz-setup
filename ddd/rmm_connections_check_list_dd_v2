@@ -1,3 +1,5 @@
+param([switch]$Silent)
+
 # ============================
 # Solutionz INC RMM Connectivity Check
 # ============================
@@ -100,16 +102,52 @@ function Test-SSL {
         Write-Host "$TargetHost - SSL CERT INVALID"
     }
 }
+$totalSteps = $remoteHosts.Count * ($samplePorts.Count + 1)
+$currentStep = 0
 
-function Test-UDPPort {
-    param ([string]$TargetHost, [int]$Port)
-    try {
-        $udpClient = New-Object System.Net.Sockets.UdpClient
-        $udpClient.Connect($TargetHost, $Port)
-        $udpClient.Close()
-        Write-Host "${TargetHost}:${Port} - UDP SENT (no response expected)"
-    } catch {
-        Write-Host "${TargetHost}:${Port} - UDP FAILED"
+function Show-ProgressBar {
+    param([int]$PercentComplete)
+    $bar = "#" * ($PercentComplete / 5)
+    $space = " " * (20 - ($PercentComplete / 5))
+    Write-Host ("[{0}{1}] {2}%" -f $bar, $space, $PercentComplete)
+}
+
+foreach ($TargetHost in $remoteHosts) {
+    $currentStep++
+    $percent = [math]::Round(($currentStep / $totalSteps) * 100)
+    Show-ProgressBar -PercentComplete $percent
+
+    if (-not $Silent) {
+        Write-Host "`nPinging $TargetHost..."
+    }
+
+    if (Test-Connection -ComputerName $TargetHost -Count 2 -Quiet) {
+        if (-not $Silent) {
+            Write-Host "$TargetHost - ICMP REACHABLE" -ForegroundColor Green
+        }
+    } else {
+        if (-not $Silent) {
+            Write-Host "$TargetHost - ICMP UNREACHABLE" -ForegroundColor Red
+        }
+    }
+
+    foreach ($Port in $samplePorts) {
+        $currentStep++
+        $percent = [math]::Round(($currentStep / $totalSteps) * 100)
+        Show-ProgressBar -PercentComplete $percent
+
+        try {
+            $tcpClient = New-Object System.Net.Sockets.TcpClient
+            $tcpClient.Connect($TargetHost, $Port)
+            $tcpClient.Close()
+            if (-not $Silent) {
+                Write-Host "${TargetHost}:${Port} - TCP OPEN" -ForegroundColor Green
+            }
+        } catch {
+            if (-not $Silent) {
+                Write-Host "${TargetHost}:${Port} - TCP CLOSED" -ForegroundColor Red
+            }
+        }
     }
 }
 
