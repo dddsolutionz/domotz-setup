@@ -1,5 +1,5 @@
 # ============================
-# Solutionz INC RMM Connectivity Check with Logging and Email
+# Solutionz INC RMM Connectivity Check
 # ============================
 
 # --- Display logo (not included in transcript) ---
@@ -15,9 +15,16 @@ Welcome to the Solutionz INC diagnostic script.
 '@
 Write-Host $logo -ForegroundColor Cyan
 
-# --- Setup log file ---
-$logPath = "$env:TEMP\RMM_Connectivity_Log.txt"
-Start-Transcript -Path $logPath -Append
+# --- Setup transcript ---
+$logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
+$transcriptStarted = $false
+
+try {
+    Start-Transcript -Path $logFile
+    $transcriptStarted = $true
+} catch {
+    Write-Host "⚠️ Transcript could not be started: $($_.Exception.Message)"
+}
 
 Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
@@ -179,52 +186,20 @@ Write-Host "Thank you for your patience."
 Write-Host "Solutionz INC RMM has completed the connectivity check."
 Write-Host "=========================================`n"
 
-# --- Stop transcript and wait briefly ---
-Stop-Transcript
-Start-Sleep -Seconds 2  # Allow time for file lock to release
-
-# --- Define paths ---
-$logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
-$downloads = Join-Path $env:USERPROFILE "Downloads"
-$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
-
-# --- Create ZIP file with retry logic ---
-if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-
-$maxRetries = 5
-$retryCount = 0
-$success = $false
-
-while (-not $success -and $retryCount -lt $maxRetries) {
+# --- Stop transcript safely ---
+if ($transcriptStarted) {
     try {
-        Compress-Archive -Path $logFile -DestinationPath $zipPath
-        $success = $true
+        Stop-Transcript
+        Start-Sleep -Seconds 2
     } catch {
-        Start-Sleep -Seconds 1
-        $retryCount++
+        Write-Host "⚠️ Transcript could not be stopped: $($_.Exception.Message)"
     }
 }
 
-# --- Final instructions ---
-Write-Host "`n========================================="
-Write-Host "Thank you for your patience."
-Write-Host "Solutionz INC RMM has completed the connectivity check."
-Write-Host "========================================="
+# --- Create ZIP file with retry logic ---
+$downloads = Join-Path $env:USERPROFILE "Downloads"
+$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 
-if ($success) {
-    Write-Host "Connectivity check completed successfully."
-    Write-Host "A zip file has been created: $zipPath"
-    Write-Host ""
-    Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
-    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-    Write-Host ""
-    Write-Host "Thank you for your assistance and support!"
-} else {
-    Write-Host "Connectivity check completed, but ZIP file creation failed after $maxRetries attempts."
-    Write-Host "Please manually attach the log file located at:"
-    Write-Host "$logFile"
-    Write-Host ""
-    Write-Host "Email to: rmmadmins@solutionzinc.com"
-    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-}
-Write-Host "=========================================`n"
+$maxRetries = 5
+$retryCount
