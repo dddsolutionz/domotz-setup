@@ -219,7 +219,7 @@ if ($success) {
     Write-Host ""
     Write-Host "Thank you for your assistance and support!"
 } else {
-    Write-Host "⚠️ Connectivity check completed, but ZIP file creation failed after $maxRetries attempts."
+    Write-Host "Connectivity check completed, but ZIP file creation failed after $maxRetries attempts."
     Write-Host "Please manually attach the log file located at:"
     Write-Host "$logFile"
     Write-Host ""
