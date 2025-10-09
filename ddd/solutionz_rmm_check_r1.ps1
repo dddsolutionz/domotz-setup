@@ -196,7 +196,7 @@ Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
 Write-Host "`n========================================="
 Write-Host "Connectivity check completed."
-Write-Host "==========================================="
+Write-Host "========================================="
 
 if ($success) {
     Write-Host "A ZIP file has been created:"
@@ -207,14 +207,12 @@ if ($success) {
     Write-Host ""
     Write-Host "Thank you for your assistance and support!"
 } else {
-    Write-Host "ZIP file creation failed after $maxRetries attempts."
+    Write-Host "ZIP file creation failed."
     Write-Host "Please manually attach the log file located at:"
-    Write-Host "$logCopyPath"
+    Write-Host "$logFile"
     Write-Host ""
     Write-Host "Email to: rmmadmins@solutionzinc.com"
     Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-    Write-Host ""
-    Write-Host "Thank you for your assistance and support!"
 }
 Write-Host "=========================================`n"
 
@@ -227,6 +225,15 @@ if ($transcriptStarted) {
         Write-Host "Transcript could not be stopped: $($_.Exception.Message)"
     }
 }
+
+# --- Create ZIP file from copied log ---
+$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
+Copy-Item -Path $logFile -Destination $logCopyPath -Force
+Compress-Archive -Path $logCopyPath -DestinationPath $zipPath
+Remove-Item $logCopyPath -Force
+
+# --- Confirm success ---
+$success = Test-Path $zipPath
 
 # --- Create ZIP file with retry logic ---
 $downloads = Join-Path $env:USERPROFILE "Downloads"
