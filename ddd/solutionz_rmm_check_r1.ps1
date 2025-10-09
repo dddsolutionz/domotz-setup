@@ -201,7 +201,7 @@ if ($success) {
 } else {
     Write-Host "ZIP file creation failed after $maxRetries attempts."
     Write-Host "Please manually attach the log file located at:"
-    Write-Host "$logFile"
+    Write-Host "$logCopyPath"
     Write-Host ""
     Write-Host "Email to: rmmadmins@solutionzinc.com"
     Write-Host "Subject: RMM Connectivity Report from $(hostname)"
@@ -222,8 +222,9 @@ if ($transcriptStarted) {
 
 # --- Create ZIP file with retry logic ---
 $downloads = Join-Path $env:USERPROFILE "Downloads"
-$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
-if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
+
+Copy-Item -Path $logFile -Destination $logCopyPath -Force
 
 $maxRetries = 5
 $retryCount
