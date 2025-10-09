@@ -2,21 +2,21 @@
 # Solutionz INC RMM Connectivity Check with Logging and Email
 # ============================
 
+# --- Display logo (not included in transcript) ---
 $logo = @'
-  _____   ____    _      _    _   _____   _    ____   __     __ 
- / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______ 
-| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /   
- \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |    / / 
- ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__ 
+  _____   ____    _      _    _   _____   _    ____   __     __
+ / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
+| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /
+ \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |    / /
+ ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
 |_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
+
+Welcome to the Solutionz INC diagnostic script.
 '@
-
 Write-Host $logo -ForegroundColor Cyan
-Write-Host "`nWelcome to the Solutionz INC diagnostic script.`n"
 
-# --- Setup log file ---
-$logPath = "$env:TEMP\RMM_Connectivity_Log.txt"
-Start-Transcript -Path $logPath -Append
+# --- Start transcript AFTER logo ---
+Start-Transcript -Path "$env:TEMP\RMM_Connectivity_Log.txt"
 
 Write-Host "`n========================================="
 Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment..."
