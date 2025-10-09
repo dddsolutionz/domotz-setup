@@ -24,36 +24,13 @@ $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
 $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 
-# --- Start transcript ---
+# Start transcript
 $transcriptStarted = $false
 try {
     Start-Transcript -Path $logFile
     $transcriptStarted = $true
 } catch {
     # Silent fail
-}
-
-# ... your diagnostic logic here ...
-
-# --- Stop transcript ---
-if ($transcriptStarted) {
-    try {
-        Stop-Transcript
-        Start-Sleep -Seconds 2
-    } catch {
-        # Silent fail
-    }
-}
-
-if (Test-Path $logFile) {
-    try {
-        Compress-Archive -Path $logFile -DestinationPath $zipPath -Force
-        $success = $true
-    } catch {
-        $success = $false
-    }
-} else {
-    $success = $false
 }
 
 # --- Test Functions ---
@@ -230,23 +207,27 @@ Write-Host "=========================================`n"
 # Auto-open Downloads folder
 Start-Process $downloads
 
-# --- Stop transcript safely ---
+# Stop transcript
 if ($transcriptStarted) {
     try {
         Stop-Transcript
         Start-Sleep -Seconds 2
     } catch {
-        Write-Host "Transcript could not be stopped: $($_.Exception.Message)"
+        # Silent fail
     }
 }
 
 # --- Create ZIP file from copied log ---
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 Copy-Item -Path $logFile -Destination $logCopyPath -Force
-Compress-Archive -Path $logCopyPath -DestinationPath $zipPath
-Remove-Item $logCopyPath -Force
-$success = Test-Path $zipPath
 
+try {
+    Compress-Archive -Path $logCopyPath -DestinationPath $zipPath -Force
+    Remove-Item $logCopyPath -Force
+    $success = $true
+} catch {
+    $success = $false
+}
 
 # --- Confirm success ---
 $success = Test-Path $zipPath
