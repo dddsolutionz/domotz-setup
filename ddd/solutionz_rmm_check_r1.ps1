@@ -204,6 +204,11 @@ while (-not $success -and $retryCount -lt $maxRetries) {
     }
 }
 
+# --- Notify if ZIP creation failed ---
+if (-not $success) {
+    Write-Host " Failed to create ZIP file after $maxRetries attempts."
+}
+
 # --- Final instructions ---
 Write-Host "`n========================================="
 Write-Host "Connectivity check completed successfully."
