@@ -180,7 +180,7 @@ Write-Host "=========================================`n"
 
 # --- Stop transcript and wait briefly ---
 Stop-Transcript
-Start-Sleep -Seconds 2  # Give the system time to release the file lock
+Start-Sleep -Seconds 2  # Allow time for file lock to release
 
 # --- Define paths ---
 $logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
@@ -204,18 +204,22 @@ while (-not $success -and $retryCount -lt $maxRetries) {
     }
 }
 
-# --- Notify if ZIP creation failed ---
-if (-not $success) {
-    Write-Host " Failed to create ZIP file after $maxRetries attempts."
-}
-
 # --- Final instructions ---
 Write-Host "`n========================================="
-Write-Host "Connectivity check completed successfully."
-Write-Host "A zip file has been created: $zipPath"
-Write-Host ""
-Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
-Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-Write-Host ""
-Write-Host "Thank you for your assistance and support!"
+if ($success) {
+    Write-Host "Connectivity check completed successfully."
+    Write-Host "A zip file has been created: $zipPath"
+    Write-Host ""
+    Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
+    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
+    Write-Host ""
+    Write-Host "Thank you for your assistance and support!"
+} else {
+    Write-Host "⚠️ Connectivity check completed, but ZIP file creation failed after $maxRetries attempts."
+    Write-Host "Please manually attach the log file located at:"
+    Write-Host "$logFile"
+    Write-Host ""
+    Write-Host "Email to: rmmadmins@solutionzinc.com"
+    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
+}
 Write-Host "=========================================`n"
