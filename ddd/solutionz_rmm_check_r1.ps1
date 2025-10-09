@@ -45,8 +45,6 @@ Write-Host "`n--- TRACE ROUTE TO portal.domotz.com ---"
 $trace = Test-NetConnection -ComputerName "portal.domotz.com" -TraceRoute
 $trace.TraceRoute | ForEach-Object { Write-Host $_ }
 
-}
-
 # --- Test Functions ---
 function Test-TCPPort {
     param ([string]$TargetHost, [int]$Port)
