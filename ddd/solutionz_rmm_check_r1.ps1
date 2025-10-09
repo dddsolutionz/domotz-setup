@@ -28,10 +28,10 @@ if ($host.Name -notmatch 'ISE') {
         Start-Transcript -Path $logFile
         $transcriptStarted = $true
     } catch {
-        Write-Host "⚠️ Transcript could not be started: $($_.Exception.Message)"
+        Write-Host "Transcript could not be started: $($_.Exception.Message)"
     }
 } else {
-    Write-Host "⚠️ Transcript not supported in PowerShell ISE."
+    Write-Host "Transcript not supported in PowerShell ISE."
 }
 
 
