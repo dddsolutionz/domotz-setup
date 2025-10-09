@@ -22,7 +22,7 @@ Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment.
 Write-Host "========================================================================`n"
 
 # --- Define file paths ---
-$logFile = "$env:TEMP\RMM_Connectivity_Log.txt"
+$logFile = Join-Path $downloads "RMM_Connectivity_Log.txt"
 $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
@@ -54,9 +54,13 @@ function Test-TCPPort {
         $tcpClient = New-Object System.Net.Sockets.TcpClient
         $tcpClient.Connect($TargetHost, $Port)
         $tcpClient.Close()
+        if (-not $Silent) {
         Write-Host "${TargetHost}:${Port} - TCP OPEN"
+        }
     } catch {
+        if (-not $Silent) {
         Write-Host "${TargetHost}:${Port} - TCP CLOSED"
+        }
     }
 }
 
