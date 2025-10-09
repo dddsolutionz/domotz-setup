@@ -195,8 +195,8 @@ if ($success) {
     Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
     Write-Host "Subject: RMM Connectivity Report from $(hostname)"
     Write-Host ""
-    Write-Host "Thank you again for your time and support in verifying your connection."
-    Write-Host "Have a wonderful day! ツ"
+    Write-Host "Thank you for your time and support in verifying your connection."
+    Write-Host "Have a wonderful day! 🙂"
 } else {
     Write-Host "ZIP file creation failed."
     Write-Host "Please manually attach the log file located at:"
