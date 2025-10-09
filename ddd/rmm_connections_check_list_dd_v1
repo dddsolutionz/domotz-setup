@@ -241,6 +241,8 @@ if ($transcriptStarted) {
         # Silent fail
     }
 }
+# --- Mask sensitive terms in the log ---
+(Get-Content $logFile) -replace "domotz", "rmm-endpoint" | Set-Content $logFile
 
 # --- Create ZIP file from copied log ---
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
