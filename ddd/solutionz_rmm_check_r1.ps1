@@ -25,7 +25,7 @@ $downloads = Join-Path $env:USERPROFILE "Downloads"
 $zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
 $logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
-# Start transcript
+# --- Start transcript ---
 $transcriptStarted = $false
 try {
     Start-Transcript -Path $logFile
