@@ -33,6 +33,10 @@ LOG_FILE="/var/log/rmm_config_check.log"
   ip route
   echo ""
 
+  echo "=== Netplan Configuration ==="
+  sudo cat /etc/netplan/00-installer-config.yaml
+  echo ""
+
   echo "===== End of RMM Configuration Check ====="
   echo ""
 } >> "$LOG_FILE"
