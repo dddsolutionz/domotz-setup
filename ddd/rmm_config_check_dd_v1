@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Define log file path
+LOG_FILE="/var/log/rmm_config_check.log"
+
+# Create or append to the log file
+{
+  echo "===== RMM Configuration Check List ====="
+  echo "Date and Time: $(date)"
+  echo ""
+
+  echo "=== Domotz Snap Connections ==="
+  sudo snap connections domotzpro-agent-publicstore
+  echo ""
+
+  echo "=== SSH Service Status ==="
+  sudo systemctl status ssh --no-pager
+  echo ""
+
+  echo "=== UFW Firewall Status ==="
+  sudo systemctl status ufw --no-pager
+  echo ""
+
+  echo "=== Hostname Information ==="
+  hostnamectl
+  echo ""
+
+  echo "=== Network Interfaces ==="
+  ip a
+  echo ""
+
+  echo "=== Network Configuration ==="
+  ip route
+  echo ""
+
+  echo "===== End of RMM Configuration Check ====="
+  echo ""
+} >> "$LOG_FILE"
+
+# Display the log automatically
+echo "Log created at: $LOG_FILE"
+echo "Displaying log contents:"
+cat "$LOG_FILE"
