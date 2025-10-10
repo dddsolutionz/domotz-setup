@@ -3,7 +3,61 @@
 # Define log file path
 LOG_FILE="/var/log/rmm_config_check.log"
 
-# Create or append to the log file
+# Define ANSI color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to colorize keywords, IPs, and hostnames
+colorize() {
+  sed -E \
+    -e "s/\b(active)\b/${GREEN}\1${NC}/g" \
+    -e "s/\b(enabled)\b/${GREEN}\1${NC}/g" \
+    -e "s/\b(inactive)\b/${RED}\1${NC}/g" \
+    -e "s/\b(disabled)\b/${RED}\1${NC}/g" \
+    -e "s/\b(txt)\b/${YELLOW}\1${NC}/g" \
+    -e "s/([0-9]{1,3}(\.[0-9]{1,3}){3})/${YELLOW}\1${NC}/g" \
+    -e "s/\b([a-zA-Z0-9._-]+\.local|[a-zA-Z0-9._-]+\.lan|[a-zA-Z0-9._-]+\.com|[a-zA-Z0-9._-]+\.net)\b/${BLUE}\1${NC}/g"
+}
+
+# Display header
+echo -e "${YELLOW}===== RMM Configuration Check List =====${NC}"
+echo "Date and Time: $(date)"
+echo ""
+
+echo -e "${YELLOW}=== Domotz Snap Connections ===${NC}"
+sudo snap connections domotzpro-agent-publicstore | colorize
+echo ""
+
+echo -e "${YELLOW}=== SSH Service Status ===${NC}"
+sudo systemctl status ssh --no-pager | colorize
+echo ""
+
+echo -e "${YELLOW}=== UFW Firewall Status ===${NC}"
+sudo systemctl status ufw --no-pager | colorize
+echo ""
+
+echo -e "${YELLOW}=== Hostname Information ===${NC}"
+hostnamectl | colorize
+echo ""
+
+echo -e "${YELLOW}=== Network Interfaces ===${NC}"
+ip a | colorize
+echo ""
+
+echo -e "${YELLOW}=== Network Configuration ===${NC}"
+ip route | colorize
+echo ""
+
+echo -e "${YELLOW}=== Netplan Configuration ===${NC}"
+sudo cat /etc/netplan/00-installer-config.yaml | colorize
+echo ""
+
+echo -e "${YELLOW}===== End of RMM Configuration Check =====${NC}"
+
+# Log plain-text version (no color codes)
 {
   echo "===== RMM Configuration Check List ====="
   echo "Date and Time: $(date)"
@@ -40,8 +94,3 @@ LOG_FILE="/var/log/rmm_config_check.log"
   echo "===== End of RMM Configuration Check ====="
   echo ""
 } >> "$LOG_FILE"
-
-# Display the log automatically
-echo "Log created at: $LOG_FILE"
-echo "Displaying log contents:"
-cat "$LOG_FILE"
