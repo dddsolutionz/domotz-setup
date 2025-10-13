@@ -231,4 +231,10 @@ $success = $false
 while (-not $success -and $retryCount -lt $maxRetries) {
     try {
         Compress-Archive -Path $logCopyPath -DestinationPath $zipPath -Force
-        Remove-Item $log
+        Remove-Item $logCopyPath -Force
+        $success = $true
+    } catch {
+        Start-Sleep -Seconds 1
+        $retryCount++
+    }
+}
