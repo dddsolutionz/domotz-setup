@@ -222,8 +222,7 @@ if ($transcriptStarted) {
 # --- Mask sensitive terms ---
 (Get-Content $logFile) -replace "domotz", "rmm-endpoint" | Set-Content $logFile
 
-# --- Create ZIP ---
-Copy-Item -Path $logFile -Destination $logCopyPath -Force
+# --- Create ZIP file with retry logic ---
 $maxRetries = 5
 $retryCount = 0
 $success = $false
