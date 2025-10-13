@@ -22,9 +22,17 @@ Write-Host "Solutionz INC is now checking RMM connections. Please wait a moment.
 Write-Host "========================================================================`n"
 
 # --- Define file paths ---
-$logFile = "$env:USERPROFILE\Downloads\RMM_Connectivity_Log.txt"
-$zipPath = "$env:USERPROFILE\Downloads\RMM_Connectivity_Report.zip"
-$logCopyPath = "$env:USERPROFILE\Downloads\RMM_Connectivity_Log.txt"
+$downloads = Join-Path $env:USERPROFILE "Downloads"
+$logFile = Join-Path $downloads "RMM_Connectivity_Log.txt"
+$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
+$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
+
+# --- CONFIGURATION ---
+$Silent = $true
+$downloads = Join-Path $env:USERPROFILE "Downloads"
+$logFile = Join-Path $downloads "RMM_Connectivity_Log.txt"
+$zipPath = Join-Path $downloads "RMM_Connectivity_Report.zip"
+$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
 
 # --- Start transcript ---
 $transcriptStarted = $false
@@ -33,18 +41,11 @@ try {
     $transcriptStarted = $true
 } catch {}
 
-# --- DEVICE INFORMATION ---
-Write-Host "`n--- DEVICE INFORMATION ---"
-Get-NetIPAddress |
-    Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.IPAddress -notlike '169.*' } |
-    ForEach-Object {
-        Write-Host "Interface: $($_.InterfaceAlias) - IP Address: $($_.IPAddress)"
-    }
-
-# --- TRACE ROUTE ---
-Write-Host "`n--- TRACE ROUTE TO portal.domotz.com ---"
-$trace = Test-NetConnection -ComputerName "portal.domotz.com" -TraceRoute
-$trace.TraceRoute | ForEach-Object { Write-Host $_ }
+# --- Progress Bar Function ---
+function Show-ProgressBar {
+    param([int]$PercentComplete)
+    Write-Progress -Activity "Checking RMM Connections" -Status "$PercentComplete% Complete" -PercentComplete $PercentComplete
+}
 
 # --- Test Functions ---
 function Test-TCPPort {
@@ -53,13 +54,9 @@ function Test-TCPPort {
         $tcpClient = New-Object System.Net.Sockets.TcpClient
         $tcpClient.Connect($TargetHost, $Port)
         $tcpClient.Close()
-        if (-not $Silent) {
         Write-Host "${TargetHost}:${Port} - TCP OPEN"
-        }
     } catch {
-        if (-not $Silent) {
         Write-Host "${TargetHost}:${Port} - TCP CLOSED"
-        }
     }
 }
 
@@ -118,54 +115,16 @@ function Test-SSL {
     }
 }
 
-function Show-ProgressBar {
-    param([int]$PercentComplete)
-    $bar = "#" * ($PercentComplete / 5)
-    $space = " " * (20 - ($PercentComplete / 5))
-    Write-Host ("[{0}{1}] {2}%" -f $bar, $space, $PercentComplete)
+# --- DEVICE INFORMATION ---
+Write-Host "`n--- DEVICE INFORMATION ---"
+Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.IPAddress -notlike '169.*' } | ForEach-Object {
+    Write-Host "Interface: $($_.InterfaceAlias) - IP Address: $($_.IPAddress)"
 }
 
-$totalSteps = $remoteHosts.Count * ($samplePorts.Count + 1)
-$currentStep = 0
-
-foreach ($TargetHost in $remoteHosts) {
-    $currentStep++
-    $percent = [math]::Round(($currentStep / $totalSteps) * 100)
-    Show-ProgressBar -PercentComplete $percent
-
-    if (-not $Silent) {
-        Write-Host "`nPinging $TargetHost..."
-    }
-
-    if (Test-Connection -ComputerName $TargetHost -Count 2 -Quiet) {
-        if (-not $Silent) {
-            Write-Host "$TargetHost - ICMP REACHABLE" -ForegroundColor Green
-        }
-    } else {
-        if (-not $Silent) {
-            Write-Host "$TargetHost - ICMP UNREACHABLE" -ForegroundColor Red
-        }
-    }
-
-    foreach ($Port in $samplePorts) {
-        $currentStep++
-        $percent = [math]::Round(($currentStep / $totalSteps) * 100)
-        Show-ProgressBar -PercentComplete $percent
-
-        try {
-            $tcpClient = New-Object System.Net.Sockets.TcpClient
-            $tcpClient.Connect($TargetHost, $Port)
-            $tcpClient.Close()
-            if (-not $Silent) {
-                Write-Host "${TargetHost}:${Port} - TCP OPEN" -ForegroundColor Green
-            }
-        } catch {
-            if (-not $Silent) {
-                Write-Host "${TargetHost}:${Port} - TCP CLOSED" -ForegroundColor Red
-            }
-        }
-    }
-}
+# --- TRACE ROUTE ---
+Write-Host "`n--- TRACE ROUTE TO portal.domotz.com ---"
+$trace = Test-NetConnection -ComputerName "portal.domotz.com" -TraceRoute
+$trace.TraceRoute | ForEach-Object { Write-Host $_ }
 
 # --- Connectivity Checks ---
 Write-Host "`n--- GENERAL CONNECTIVITY ---"
@@ -174,7 +133,6 @@ Test-HTTP -TargetHost "portal.domotz.com"
 Test-SSL -TargetHost "portal.domotz.com"
 Test-TCPPort -TargetHost "portal.domotz.com" -Port 443
 
-Write-Host "`nChecking echo.domotz.com (ICMP)"
 Test-DNS -TargetHost "echo.domotz.com"
 Test-ICMP -TargetHost "echo.domotz.com"
 
@@ -196,17 +154,19 @@ $remoteHosts = @(
 )
 $samplePorts = @(32700, 40000, 50000, 57699)
 
-foreach ($TargetHost in $remoteHosts) {
-    # Ping the host first
-    Write-Host "`nPinging $TargetHost..."
-    if (Test-Connection -ComputerName $TargetHost -Count 2 -Quiet) {
-        Write-Host "$TargetHost - ICMP REACHABLE"
-    } else {
-        Write-Host "$TargetHost - ICMP UNREACHABLE"
-    }
+$totalSteps = $remoteHosts.Count * ($samplePorts.Count + 1)
+$currentStep = 0
 
-    # Then test TCP ports
+foreach ($TargetHost in $remoteHosts) {
+    $currentStep++
+    $percent = [math]::Round(($currentStep / $totalSteps) * 100)
+    Show-ProgressBar -PercentComplete $percent
+    Test-ICMP -TargetHost $TargetHost
+
     foreach ($Port in $samplePorts) {
+        $currentStep++
+        $percent = [math]::Round(($currentStep / $totalSteps) * 100)
+        Show-ProgressBar -PercentComplete $percent
         Test-TCPPort -TargetHost $TargetHost -Port $Port
     }
 }
@@ -236,22 +196,13 @@ foreach ($TargetHost in $canonicalHosts) {
 }
 
 Write-Host "`n--- HTTPS SERVERS ---"
-$httpsHosts = @(
-    "www.google.com",
-    "www.fast.com",
-    "www.canonical.com",
-    "www.redhat.com"
-)
+$httpsHosts = @("www.google.com", "www.fast.com", "www.canonical.com", "www.redhat.com")
 foreach ($TargetHost in $httpsHosts) {
     Test-TCPPort -TargetHost $TargetHost -Port 443
 }
 
 Write-Host "`n--- NTP SERVERS (UDP 123) ---"
-$ntpHosts = @(
-    "ntp.ubuntu.com",
-    "0.pool.ntp.org",
-    "1.pool.ntp.org"
-)
+$ntpHosts = @("ntp.ubuntu.com", "0.pool.ntp.org", "1.pool.ntp.org")
 foreach ($TargetHost in $ntpHosts) {
     Test-UDPPort -TargetHost $TargetHost -Port 123
 }
@@ -260,73 +211,24 @@ Write-Host "`n--- SPEEDTEST SERVICES ---"
 Test-TCPPort -TargetHost "api.fast.com" -Port 443
 Test-TCPPort -TargetHost "ichnaea-web.netflix.com" -Port 443
 
-Write-Host "`n========================================="
-Write-Host "Connectivity check completed."
-Write-Host "========================================="
-
-if ($success) {
-    Write-Host "A ZIP file has been created:"
-    Write-Host "$zipPath"
-    Write-Host ""
-    Write-Host "Please email this file to: rmmadmins@solutionzinc.com"
-    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-    Write-Host ""
-    Write-Host "Thank you for your time and support in verifying your connection."
-    Write-Host "Have a wonderful day! 🙂"
-} else {
-    Write-Host "ZIP file creation failed."
-    Write-Host "Please manually attach the log file located at:"
-    Write-Host "$logFile"
-    Write-Host ""
-    Write-Host "Email to: rmmadmins@solutionzinc.com"
-    Write-Host "Subject: RMM Connectivity Report from $(hostname)"
-}
-Write-Host "=========================================`n"
-
-# Auto-open Downloads folder
-Start-Process $downloads
-
-# Stop transcript
+# --- Stop transcript ---
 if ($transcriptStarted) {
     try {
         Stop-Transcript
         Start-Sleep -Seconds 2
-    } catch {
-        # Silent fail
-    }
+    } catch {}
 }
-# --- Mask sensitive terms in the log ---
+
+# --- Mask sensitive terms ---
 (Get-Content $logFile) -replace "domotz", "rmm-endpoint" | Set-Content $logFile
 
-# --- Create ZIP file from copied log ---
-$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
+# --- Create ZIP ---
 Copy-Item -Path $logFile -Destination $logCopyPath -Force
-
-try {
-    Compress-Archive -Path $logCopyPath -DestinationPath $zipPath -Force
-    Remove-Item $logCopyPath -Force
-    $success = $true
-} catch {
-    $success = $false
-}
-
-# --- Confirm success ---
-$success = Test-Path $zipPath
-
-# --- Create ZIP file with retry logic ---
-$downloads = Join-Path $env:USERPROFILE "Downloads"
-$logCopyPath = Join-Path $downloads "RMM_Connectivity_Log.txt"
-
 $maxRetries = 5
 $retryCount = 0
 $success = $false
 
 while (-not $success -and $retryCount -lt $maxRetries) {
     try {
-        Compress-Archive -Path $logCopyPath -DestinationPath $zipPath
-        $success = $true
-    } catch {
-        Start-Sleep -Seconds 1
-        $retryCount++
-    }
-}
+        Compress-Archive -Path $logCopyPath -DestinationPath $zipPath -Force
+        Remove-Item $log
