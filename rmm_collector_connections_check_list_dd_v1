@@ -1,0 +1,143 @@
+#!/bin/bash
+
+# ============================
+# Solutionz INC RMM Connectivity Check (Linux)
+# ============================
+
+# --- Display logo and welcome ---
+echo -e "\e[36m
+  _____   ____    _      _    _   _____   _    ____   __     __
+ / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
+| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /
+ \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |    / /
+ ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
+|_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
+
+Welcome to the Solutionz INC diagnostic script.
+\e[0m"
+
+echo "======================================================================"
+echo "Solutionz INC is now checking RMM connections. Please wait a moment..."
+echo "======================================================================"
+
+# --- Log setup ---
+log_file="/var/log/RMM_Connectivity_Log.txt"
+
+# Ensure script is run with sudo to write to /var/log
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run this script with sudo to write to /var/log"
+  exit 1
+fi
+
+exec > >(tee "$log_file") 2>&1
+
+# --- Test Functions ---
+test_tcp_port() {
+  nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+}
+
+test_udp_port() {
+  echo > /dev/udp/"$1"/"$2" && echo "$1:$2 - UDP SENT" || echo "$1:$2 - UDP FAILED"
+}
+
+test_icmp() {
+  ping -c 2 "$1" &> /dev/null && echo "$1 - ICMP REACHABLE" || echo "$1 - ICMP UNREACHABLE"
+}
+
+test_dns() {
+  dig +short "$1" &> /dev/null && echo "$1 - DNS RESOLVED" || echo "$1 - DNS FAILED"
+}
+
+test_http() {
+  curl -s -o /dev/null -w "%{http_code}" "https://$1" && echo "$1 - HTTP SUCCESS" || echo "$1 - HTTP FAILED"
+}
+
+test_ssl() {
+  echo | openssl s_client -connect "$1:443" -servername "$1" &> /dev/null && echo "$1 - SSL VALID" || echo "$1 - SSL INVALID"
+}
+
+# --- Device Info ---
+echo "--- DEVICE INFORMATION ---"
+ip -4 addr show | grep inet
+
+# --- Trace Route ---
+echo "--- TRACE ROUTE TO portal.domotz.com ---"
+traceroute portal.domotz.com
+
+# --- Connectivity Checks ---
+echo "--- GENERAL CONNECTIVITY ---"
+test_dns "portal.domotz.com"
+test_http "portal.domotz.com"
+test_ssl "portal.domotz.com"
+test_tcp_port "portal.domotz.com" 443
+
+test_dns "echo.domotz.com"
+test_icmp "echo.domotz.com"
+
+echo "--- API CONNECTIVITY ---"
+test_tcp_port "api-us-east-1-cell-1.domotz.com" 443
+test_tcp_port "api-eu-west-1-cell-1.domotz.com" 443
+
+echo "--- MESSAGING SERVICES ---"
+test_tcp_port "messaging-us-east-1-cell-1.domotz.com" 5671
+test_tcp_port "messaging-eu-west-1-cell-1.domotz.com" 5671
+
+echo "--- REMOTE CONNECTIONS ---"
+remote_hosts=(
+  "sshg.domotz.co"
+  "us-east-1-sshg.domotz.co"
+  "us-east-1-02-sshg.domotz.co"
+  "us-west-2-sshg.domotz.co"
+  "ap-southeast-2-sshg.domotz.co"
+)
+sample_ports=(32700 40000 50000 57699)
+
+for host in "${remote_hosts[@]}"; do
+  test_icmp "$host"
+  for port in "${sample_ports[@]}"; do
+    test_tcp_port "$host" "$port"
+  done
+done
+
+echo "--- PROVISIONING CHANNEL ---"
+test_tcp_port "provisioning.domotz.com" 4505
+test_tcp_port "provisioning.domotz.com" 4506
+test_tcp_port "login.ubuntu.com" 443
+test_tcp_port "pool.sks-keyservers.net" 11371
+test_tcp_port "messaging.orchestration.domotz.com" 5671
+test_tcp_port "api.orchestration.wl-pro.com" 443
+test_tcp_port "tunny.domotz.org" 55022
+
+echo "--- UPDATES FROM CANONICAL ---"
+canonical_hosts=(
+  "api.snapcraft.io"
+  "serial-vault-partners.canonical.com"
+  "storage.snapcraftcontent.com"
+  "canonical-lgw01.cdn.snapcraftcontent.com"
+  "canonical-lcy01.cdn.snapcraftcontent.com"
+  "canonical-lcy02.cdn.snapcraftcontent.com"
+  "canonical-bos01.cdn.snapcraftcontent.com"
+  "upload.apps.ubuntu.com"
+)
+for host in "${canonical_hosts[@]}"; do
+  test_tcp_port "$host" 443
+done
+
+echo "--- HTTPS SERVERS ---"
+https_hosts=("www.google.com" "www.fast.com" "www.canonical.com" "www.redhat.com")
+for host in "${https_hosts[@]}"; do
+  test_tcp_port "$host" 443
+done
+
+echo "--- NTP SERVERS (UDP 123) ---"
+ntp_hosts=("ntp.ubuntu.com" "0.pool.ntp.org" "1.pool.ntp.org")
+for host in "${ntp_hosts[@]}"; do
+  test_udp_port "$host" 123
+done
+
+echo "--- SPEEDTEST SERVICES ---"
+test_tcp_port "api.fast.com" 443
+test_tcp_port "ichnaea-web.netflix.com" 443
+
+# --- Mask sensitive terms ---
+sed -i 's/domotz/rmm-endpoint/g' "$log_file"
