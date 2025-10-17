@@ -17,9 +17,9 @@ apt install traceroute netcat-openbsd dnsutils curl openssl -y
 # --- Log setup ---
 log_file="/var/log/RMM_Connectivity_Log.txt"
 {
-echo "===== RMM Connectivity Check Log ====="
-echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "======================================"
+  echo "===== RMM Connectivity Check Log ====="
+  echo "Log started at: $(date '+%Y-%m-%d %H:%M:%S')"
+  echo "======================================"
 } > "$log_file"
 
 exec >> "$log_file" 2>&1
