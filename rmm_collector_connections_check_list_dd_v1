@@ -35,7 +35,8 @@ log_file="/var/log/RMM_Connectivity_Log.txt"
   echo "======================================"
 } > "$log_file"
 
-exec >> "$log_file" 2>&1
+echo "Logging output to $log_file and displaying in terminal..."
+exec > >(tee -a "$log_file") 2>&1
 
 echo "Beginning connectivity checks..."
 
