@@ -24,6 +24,8 @@ log_file="/var/log/RMM_Connectivity_Log.txt"
 
 exec >> "$log_file" 2>&1
 
+echo "Beginning connectivity checks..."
+
 # --- Display logo and welcome ---
 echo -e "\e[36m
   _____   ____    _      _    _   _____   _    ____   __     __
@@ -40,17 +42,17 @@ echo "======================================================================"
 echo "Solutionz INC is now checking RMM connections. Please wait a moment..."
 echo "======================================================================"
 
-# --- Test Functions ---
+# --- Test Functions with Timeouts ---
 test_tcp_port() {
-  nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+  timeout 5 nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
 }
 
 test_udp_port() {
-  echo > /dev/udp/"$1"/"$2" && echo "$1:$2 - UDP SENT" || echo "$1:$2 - UDP FAILED"
+  timeout 5 bash -c "echo > /dev/udp/$1/$2" && echo "$1:$2 - UDP SENT" || echo "$1:$2 - UDP FAILED"
 }
 
 test_icmp() {
-  ping -c 2 "$1" &> /dev/null && echo "$1 - ICMP REACHABLE" || echo "$1 - ICMP UNREACHABLE"
+  ping -c 2 -W 3 "$1" &> /dev/null && echo "$1 - ICMP REACHABLE" || echo "$1 - ICMP UNREACHABLE"
 }
 
 test_dns() {
@@ -62,7 +64,7 @@ test_http() {
 }
 
 test_ssl() {
-  echo | openssl s_client -connect "$1:443" -servername "$1" &> /dev/null && echo "$1 - SSL VALID" || echo "$1 - SSL INVALID"
+  echo | timeout 5 openssl s_client -connect "$1:443" -servername "$1" &> /dev/null && echo "$1 - SSL VALID" || echo "$1 - SSL INVALID"
 }
 
 # --- Device Info ---
@@ -71,7 +73,7 @@ ip -4 addr show | grep inet
 
 # --- Trace Route ---
 echo "--- TRACE ROUTE TO portal.domotz.com ---"
-traceroute portal.domotz.com
+timeout 10 traceroute portal.domotz.com
 
 # --- Connectivity Checks ---
 echo "--- GENERAL CONNECTIVITY ---"
@@ -148,7 +150,5 @@ echo "--- SPEEDTEST SERVICES ---"
 test_tcp_port "api.fast.com" 443
 test_tcp_port "ichnaea-web.netflix.com" 443
 
-# --- Mask sensitive terms ---
-sed -i 's/domotz/rmm-endpoint/g' "$log_file"
 # --- Mask sensitive terms ---
 sed -i 's/domotz/rmm-endpoint/g' "$log_file"
