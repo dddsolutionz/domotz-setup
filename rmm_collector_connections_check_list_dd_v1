@@ -4,20 +4,18 @@
 # Solutionz INC RMM Connectivity Check (Linux)
 # ============================
 
-# --- Ensure required packages are installed ---
-echo "Installing required packages..."
-sudo apt install traceroute netcat-openbsd dnsutils curl openssl -y
-
-# --- Log setup ---
-log_file="/var/log/RMM_Connectivity_Log.txt"
-
-# Ensure script is run with sudo to write to /var/log
+# --- Ensure script is run with sudo ---
 if [ "$EUID" -ne 0 ]; then
-  echo "Please run this script with sudo to write to /var/log"
+  echo "Please run this script with sudo"
   exit 1
 fi
 
-# --- Start logging with timestamp ---
+# --- Install required packages (without apt update) ---
+echo "Installing required packages..."
+apt install traceroute netcat-openbsd dnsutils curl openssl -y
+
+# --- Log setup ---
+log_file="/var/log/RMM_Connectivity_Log.txt"
 {
 echo "===== RMM Connectivity Check Log ====="
 echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
@@ -150,5 +148,7 @@ echo "--- SPEEDTEST SERVICES ---"
 test_tcp_port "api.fast.com" 443
 test_tcp_port "ichnaea-web.netflix.com" 443
 
+# --- Mask sensitive terms ---
+sed -i 's/domotz/rmm-endpoint/g' "$log_file"
 # --- Mask sensitive terms ---
 sed -i 's/domotz/rmm-endpoint/g' "$log_file"
