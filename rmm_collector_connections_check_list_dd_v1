@@ -10,9 +10,22 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# --- Install required packages (without apt update) ---
-echo "Installing required packages..."
-apt install traceroute netcat-openbsd dnsutils curl openssl -y
+# --- Check and install missing packages ---
+required_packages=(traceroute netcat-openbsd dnsutils curl openssl)
+missing_packages=()
+
+for pkg in "${required_packages[@]}"; do
+  if ! dpkg -s "$pkg" &> /dev/null; then
+    missing_packages+=("$pkg")
+  fi
+done
+
+if [ ${#missing_packages[@]} -gt 0 ]; then
+  echo "Installing missing packages: ${missing_packages[*]}"
+  apt install "${missing_packages[@]}" -y
+else
+  echo "All required packages are already installed. Skipping installation."
+fi
 
 # --- Log setup ---
 log_file="/var/log/RMM_Connectivity_Log.txt"
@@ -152,3 +165,8 @@ test_tcp_port "ichnaea-web.netflix.com" 443
 
 # --- Mask sensitive terms ---
 sed -i 's/domotz/rmm-endpoint/g' "$log_file"
+
+# --- Final timestamp ---
+echo "======================================"
+echo "Log completed at: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "======================================"
