@@ -6,7 +6,7 @@
 
 # --- Ensure required packages are installed ---
 echo "Installing required packages..."
-sudo apt update && sudo apt install traceroute netcat-openbsd dnsutils curl openssl -y
+sudo apt install traceroute netcat-openbsd dnsutils curl openssl -y
 
 # --- Log setup ---
 log_file="/var/log/RMM_Connectivity_Log.txt"
