@@ -8,6 +8,24 @@
 echo "Installing required packages..."
 sudo apt update && sudo apt install traceroute netcat-openbsd dnsutils curl openssl -y
 
+# --- Log setup ---
+log_file="/var/log/RMM_Connectivity_Log.txt"
+
+# Ensure script is run with sudo to write to /var/log
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run this script with sudo to write to /var/log"
+  exit 1
+fi
+
+# --- Start logging with timestamp ---
+{
+echo "===== RMM Connectivity Check Log ====="
+echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "======================================"
+} > "$log_file"
+
+exec >> "$log_file" 2>&1
+
 # --- Display logo and welcome ---
 echo -e "\e[36m
   _____   ____    _      _    _   _____   _    ____   __     __
@@ -23,17 +41,6 @@ Welcome to the Solutionz INC diagnostic script.
 echo "======================================================================"
 echo "Solutionz INC is now checking RMM connections. Please wait a moment..."
 echo "======================================================================"
-
-# --- Log setup ---
-log_file="/var/log/RMM_Connectivity_Log.txt"
-
-# Ensure script is run with sudo to write to /var/log
-if [ "$EUID" -ne 0 ]; then
-  echo "Please run this script with sudo to write to /var/log"
-  exit 1
-fi
-
-exec > >(tee "$log_file") 2>&1
 
 # --- Test Functions ---
 test_tcp_port() {
