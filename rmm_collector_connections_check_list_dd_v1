@@ -4,6 +4,10 @@
 # Solutionz INC RMM Connectivity Check (Linux)
 # ============================
 
+# --- Ensure required packages are installed ---
+echo "Installing required packages..."
+sudo apt update && sudo apt install traceroute netcat-openbsd dnsutils curl openssl -y
+
 # --- Display logo and welcome ---
 echo -e "\e[36m
   _____   ____    _      _    _   _____   _    ____   __     __
