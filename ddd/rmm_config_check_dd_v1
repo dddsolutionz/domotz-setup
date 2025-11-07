@@ -23,9 +23,7 @@ colorize() {
 }
 
 # --- Display logo and welcome ---
-echo cat <<EOF
-
-\033[36m
+printf "\033[36m
   _____   ____    _      _    _   _____   _    ____   __     __
  / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
 | (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /
@@ -34,7 +32,7 @@ echo cat <<EOF
 |_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
 
 Welcome to the Solutionz INC diagnostic script.
-\033[0m
+\033[0m\n"
 
 EOF
 
