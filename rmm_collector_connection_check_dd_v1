@@ -52,10 +52,6 @@ echo -e "\e[36m
 Welcome to the Solutionz INC diagnostic script.
 \e[0m"
 
-echo "======================================================================"
-echo "Solutionz INC is now checking RMM connections. Please wait a moment..."
-echo "======================================================================"
-
 # --- Test Functions with Timeouts ---
 test_tcp_port() {
   timeout 5 nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
