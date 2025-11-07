@@ -23,7 +23,9 @@ colorize() {
 }
 
 # --- Display logo and welcome ---
-printf "\033[36m
+echo -e "\033[36m"
+cat <<'EOF'
+
   _____   ____    _      _    _   _____   _    ____   __     __
  / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
 | (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /
@@ -32,9 +34,8 @@ printf "\033[36m
 |_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
 
 Welcome to the Solutionz INC diagnostic script.
-\033[0m\n"
-
 EOF
+echo -e "\033[0m"
 
 # Display header
 echo -e "${YELLOW}===== RMM Configuration Check List =====${NC}"
