@@ -37,6 +37,10 @@ Welcome to the Solutionz INC diagnostic script.
 EOF
 echo -e "\033[0m"
 
+echo "==============================================================================="
+echo "Solutionz INC is now checking the RMM configurations. Please wait a moment..."
+echo "==============================================================================="
+
 # Display header
 echo -e "${YELLOW}===== RMM Configuration Check List =====${NC}"
 echo "Date and Time: $(date)"
