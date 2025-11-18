@@ -93,7 +93,7 @@ declare -A packages=(
   [dnsutils]="DNS resolution testing"
   [curl]="HTTP/S data transfer"
   [openssl]="SSL/TLS diagnostics"
-  [netcat]="TCP/UDP connectivity testing"
+  [netcat-openbsd]="TCP/UDP connectivity testing"
   [nano]="Text editor"
   [iputils-ping]="ICMP ping utility"
 )
@@ -102,7 +102,7 @@ for pkg in "${!packages[@]}"; do
     progress_message "Installing $pkg - ${packages[$pkg]}"
     sudo apt install -y "$pkg"
   else
-    progress_message "$pkg is already installed. ✅"
+    progress_message "$pkg is already installed."
   fi
 done
 # Step 2
