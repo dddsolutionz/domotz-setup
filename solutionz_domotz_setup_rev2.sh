@@ -73,20 +73,38 @@ step_message() {
 progress_message() {
     echo "   [+] $1"
 }
-# Step 1
+# Step 1: Update and install packages
 step_message 1 "Updating System and installing key packages"
 
-progress_message "Disabling apt script warning if not already suppressed..."
-if [ ! -f /etc/apt/apt.conf.d/90disablescriptwarning ]; then
-    echo "Apt::Cmd::Disable-Script-Warning true;" | sudo tee /etc/apt/apt.conf.d/90disablescriptwarning
-fi
+progress_message "Suppressing apt script warnings..."
+echo "Apt::Cmd::Disable-Script-Warning true;" | sudo tee /etc/apt/apt.conf.d/90disablescriptwarning
 
 progress_message "Updating package lists..."
 sudo apt update
+
 progress_message "Upgrading packages..."
 sudo apt upgrade -y
-progress_message "Installing necessary packages..."
-sudo apt install -y net-tools openvswitch-switch
+
+progress_message "Installing required diagnostic and connectivity tools..."
+declare -A packages=(
+  [net-tools]="Legacy networking tools"
+  [openvswitch-switch]="Virtual switch for advanced networking"
+  [traceroute]="Packet path tracing"
+  [dnsutils]="DNS resolution testing"
+  [curl]="HTTP/S data transfer"
+  [openssl]="SSL/TLS diagnostics"
+  [netcat]="TCP/UDP connectivity testing"
+  [nano]="Text editor"
+  [iputils-ping]="ICMP ping utility"
+)
+for pkg in "${!packages[@]}"; do
+  if ! dpkg -s "$pkg" &> /dev/null; then
+    progress_message "Installing $pkg - ${packages[$pkg]}"
+    sudo apt install -y "$pkg"
+  else
+    progress_message "$pkg is already installed. ✅"
+  fi
+done
 # Step 2
 step_message 2 "Loading tun module if not already loaded"
 progress_message "Loading 'tun' module..."
