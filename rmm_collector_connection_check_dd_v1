@@ -11,7 +11,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # --- Check and install missing packages ---
-required_packages=(traceroute netcat-openbsd dnsutils curl openssl)
+required_packages=(traceroute dnsutils curl openssl)
 missing_packages=()
 
 for pkg in "${required_packages[@]}"; do
@@ -52,9 +52,14 @@ echo -e "\e[36m
 Welcome to the Solutionz INC diagnostic script.
 \e[0m"
 
-# --- Test Functions with Timeouts ---
+# --- Test Functions with Fallbacks ---
 test_tcp_port() {
-  timeout 5 nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+  if command -v nc &> /dev/null; then
+    timeout 5 nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+  else
+    echo "WARNING: 'nc' not found. Falling back to /dev/tcp for $1:$2"
+    timeout 5 bash -c "echo > /dev/tcp/$1/$2" &> /dev/null && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+  fi
 }
 
 test_udp_port() {
