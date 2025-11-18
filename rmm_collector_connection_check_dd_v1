@@ -1,7 +1,9 @@
 #!/bin/bash
-
 # ============================
 # Solutionz INC RMM Connectivity Check (Linux)
+# Author: D. Della
+# Last Updated: 2025-11-18
+# Description: Performs network diagnostics to verify connectivity to Domotz cloud services.
 # ============================
 
 # --- Ensure script is run with sudo ---
@@ -52,13 +54,44 @@ echo -e "\e[36m
 Welcome to the Solutionz INC diagnostic script.
 \e[0m"
 
+# --- Summary of Diagnostic Steps ---
+echo -e "\n\e[1mSummary: This script will perform the following diagnostic checks:\e[0m"
+echo "1. Verify required tools are installed (traceroute, dig, curl, openssl)."
+echo "2. Display current network interface IP addresses."
+echo "3. Show routing table and interface status."
+echo "4. Perform traceroute to portal.domotz.com."
+echo "5. Test DNS resolution (system and fallback via 8.8.8.8)."
+echo "6. Test HTTP and SSL connectivity to Domotz cloud."
+echo "7. Check TCP port availability for Domotz API and messaging services."
+echo "8. Ping and test TCP ports for remote Domotz relay endpoints."
+echo "9. Test provisioning and orchestration endpoints."
+echo "10. Verify connectivity to Canonical update and HTTPS services."
+echo "11. Send UDP packets to NTP servers to verify time sync."
+echo "12. Test speedtest-related endpoints."
+echo -e "\nResults will be logged to: $log_file\n"
+
 # --- Test Functions ---
 test_tcp_port() {
+  local host="$1"
+  local port="$2"
+  local result
+
   if command -v nc &> /dev/null; then
-    timeout 5 nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+    result=$(timeout 5 nc -z -v -w3 "$host" "$port" 2>&1)
+    if echo "$result" | grep -q succeeded; then
+      echo "$host:$port - TCP OPEN"
+    else
+      echo "$host:$port - TCP CLOSED"
+      test_icmp "$host"
+    fi
   else
-    echo "WARNING: 'nc' not found. Falling back to /dev/tcp for $1:$2"
-    timeout 5 bash -c "echo > /dev/tcp/$1/$2" &> /dev/null && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
+    echo "WARNING: 'nc' not found. Falling back to /dev/tcp for $host:$port"
+    if timeout 5 bash -c "echo > /dev/tcp/$host/$port" &> /dev/null; then
+      echo "$host:$port - TCP OPEN"
+    else
+      echo "$host:$port - TCP CLOSED"
+      test_icmp "$host"
+    fi
   fi
 }
 
@@ -96,9 +129,6 @@ ip route show
 echo "--- INTERFACE STATUS ---"
 ip link show
 
-echo "--- DOMOTZ AGENT STATUS ---"
-systemctl status domotz-agent | head -n 10 || echo "Domotz agent not installed or inactive."
-
 # --- Trace Route ---
 echo "--- TRACE ROUTE TO portal.domotz.com ---"
 timeout 10 traceroute portal.domotz.com
@@ -134,7 +164,6 @@ remote_hosts=(
 sample_ports=(32700 40000 50000 57699)
 
 for host in "${remote_hosts[@]}"; do
-  test_icmp "$host"
   for port in "${sample_ports[@]}"; do
     test_tcp_port "$host" "$port"
   done
@@ -170,23 +199,4 @@ for host in "${https_hosts[@]}"; do
   test_tcp_port "$host" 443
 done
 
-echo "--- NTP SERVERS (UDP 123) ---"
-ntp_hosts=("ntp.ubuntu.com" "0.pool.ntp.org" "1.pool.ntp.org")
-for host in "${ntp_hosts[@]}"; do
-  test_udp_port "$host" 123
-done
-
-echo "--- SPEEDTEST SERVICES ---"
-test_tcp_port "api.fast.com" 443
-test_tcp_port "ichnaea-web.netflix.com" 443
-
-# --- Mask sensitive terms ---
-sed -i 's/domotz/rmm-endpoint/g' "$log_file"
-
-# --- Final timestamp ---
-echo "======================================"
-echo "Log completed at: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "======================================"
-
-# --- Note ---
-echo "NOTE: Domotz may use cloud relays, cached IPs, or HTTPS tunnels. Some failures above may not affect actual app functionality."
+echo "--- NTP SERVERS (UDP 123)
