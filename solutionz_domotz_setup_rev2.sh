@@ -1,7 +1,26 @@
 #!/bin/bash
+# ============================
+# Solutionz INC RMM Collector Image (Linux)
+# System Admin: D.Della
+# Last Updated: 2025-11-18
+# Description: Install and update the collector to Solutoinz RMM configuration.
+# ============================
+
 set -e
 exec > >(tee -i setup.log)
 exec 2>&1
+
+# --- Display logo and welcome ---
+echo -e "\e[36m
+  _____   ____    _      _    _   _____   _    ____   __     __
+ / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
+| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /
+ \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |    / /
+ ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
+|_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
+
+Welcome to the Solutionz INC configuration script.
+\e[0m"
 
 # Confirmation message
 echo "------------------------------------------------------------"
