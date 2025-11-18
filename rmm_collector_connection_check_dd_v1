@@ -52,7 +52,7 @@ echo -e "\e[36m
 Welcome to the Solutionz INC diagnostic script.
 \e[0m"
 
-# --- Test Functions with Fallbacks ---
+# --- Test Functions ---
 test_tcp_port() {
   if command -v nc &> /dev/null; then
     timeout 5 nc -z -v -w3 "$1" "$2" && echo "$1:$2 - TCP OPEN" || echo "$1:$2 - TCP CLOSED"
@@ -74,6 +74,10 @@ test_dns() {
   dig +short "$1" &> /dev/null && echo "$1 - DNS RESOLVED" || echo "$1 - DNS FAILED"
 }
 
+test_dns_fallback() {
+  dig +short "$1" @8.8.8.8 &> /dev/null && echo "$1 - DNS RESOLVED via 8.8.8.8" || echo "$1 - DNS FAILED via fallback"
+}
+
 test_http() {
   curl -s -o /dev/null -w "%{http_code}" "https://$1" && echo "$1 - HTTP SUCCESS" || echo "$1 - HTTP FAILED"
 }
@@ -86,6 +90,15 @@ test_ssl() {
 echo "--- DEVICE INFORMATION ---"
 ip -4 addr show | grep inet
 
+echo "--- ROUTING TABLE ---"
+ip route show
+
+echo "--- INTERFACE STATUS ---"
+ip link show
+
+echo "--- DOMOTZ AGENT STATUS ---"
+systemctl status domotz-agent | head -n 10 || echo "Domotz agent not installed or inactive."
+
 # --- Trace Route ---
 echo "--- TRACE ROUTE TO portal.domotz.com ---"
 timeout 10 traceroute portal.domotz.com
@@ -93,11 +106,13 @@ timeout 10 traceroute portal.domotz.com
 # --- Connectivity Checks ---
 echo "--- GENERAL CONNECTIVITY ---"
 test_dns "portal.domotz.com"
+test_dns_fallback "portal.domotz.com"
 test_http "portal.domotz.com"
 test_ssl "portal.domotz.com"
 test_tcp_port "portal.domotz.com" 443
 
 test_dns "echo.domotz.com"
+test_dns_fallback "echo.domotz.com"
 test_icmp "echo.domotz.com"
 
 echo "--- API CONNECTIVITY ---"
@@ -172,3 +187,6 @@ sed -i 's/domotz/rmm-endpoint/g' "$log_file"
 echo "======================================"
 echo "Log completed at: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "======================================"
+
+# --- Note ---
+echo "NOTE: Domotz may use cloud relays, cached IPs, or HTTPS tunnels. Some failures above may not affect actual app functionality."
