@@ -13,8 +13,8 @@ exec 2>&1
 # --- Display logo and welcome ---
 echo -e "\e[36m
   _____   ____    _      _    _   _____   _    ____   __     __
- / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  ______
-| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___  /
+ / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  _____
+| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___ /
  \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |   / /
  ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
 |_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
@@ -165,6 +165,7 @@ EOL
 sudo chmod 600 /etc/netplan/00-installer-config.yaml
 sudo rm -f /etc/netplan/50-cloud-init.yaml
 sudo rm -f /etc/netplan/50-cloud-init.yaml.save
+sudo rm -f /etc/netplan/90-solutionz-config.yaml
 sudo netplan apply
 # Step 8
 step_message 8 "Resolving VPN on Demand issue with DNS"
