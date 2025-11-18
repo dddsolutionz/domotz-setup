@@ -67,7 +67,6 @@ echo "8. Ping and test TCP ports for remote Domotz relay endpoints."
 echo "9. Test provisioning and orchestration endpoints."
 echo "10. Verify connectivity to Canonical update and HTTPS services."
 echo "11. Send UDP packets to NTP servers to verify time sync."
-echo "12. Test speedtest-related endpoints."
 echo -e "\nResults will be logged to: $log_file\n"
 
 # --- Test Functions ---
@@ -77,12 +76,13 @@ test_tcp_port() {
   local result
 
   if command -v nc &> /dev/null; then
-    result=$(timeout 5 nc -z -v -w3 "$host" "$port" 2>&1)
+    echo "Testing $host:$port..."
+    result=$(nc -z -v -w3 "$host" "$port" 2>&1)
+    echo "$result"
     if echo "$result" | grep -q succeeded; then
       echo "$host:$port - TCP OPEN"
     else
       echo "$host:$port - TCP CLOSED"
-      test_icmp "$host"
     fi
   else
     echo "WARNING: 'nc' not found. Falling back to /dev/tcp for $host:$port"
@@ -90,9 +90,10 @@ test_tcp_port() {
       echo "$host:$port - TCP OPEN"
     else
       echo "$host:$port - TCP CLOSED"
-      test_icmp "$host"
     fi
   fi
+
+  test_icmp "$host"
 }
 
 test_udp_port() {
@@ -164,6 +165,7 @@ remote_hosts=(
 sample_ports=(32700 40000 50000 57699)
 
 for host in "${remote_hosts[@]}"; do
+  test_icmp "$host"
   for port in "${sample_ports[@]}"; do
     test_tcp_port "$host" "$port"
   done
@@ -200,15 +202,10 @@ for host in "${https_hosts[@]}"; do
 done
 
 echo "--- NTP SERVERS (UDP 123) ---"
-ntp_servers=("0.ubuntu.pool.ntp.org" "1.ubuntu.pool.ntp.org" "2.ubuntu.pool.ntp.org")
-
-for server in "${ntp_servers[@]}"; do
-  test_udp_port "$server" 123
-done
+ntp_servers=("ntp.ubuntu.com" "0
 
 # --- Final timestamp and attribution ---
 echo "======================================"
-echo "Diagnostics completed at: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "Log saved to: $log_file"
+echo "Log completed at: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Script maintained by: System Admin - D.Della"
-
+echo "======================================"
