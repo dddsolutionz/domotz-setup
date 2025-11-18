@@ -202,10 +202,15 @@ for host in "${https_hosts[@]}"; do
 done
 
 echo "--- NTP SERVERS (UDP 123) ---"
-ntp_servers=("ntp.ubuntu.com" "0
+ntp_servers=("0.ubuntu.pool.ntp.org" "1.ubuntu.pool.ntp.org" "2.ubuntu.pool.ntp.org")
+
+for server in "${ntp_servers[@]}"; do
+  test_udp_port "$server" 123
+done
 
 # --- Final timestamp and attribution ---
 echo "======================================"
 echo "Log completed at: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Log saved to: $log_file"
 echo "Script maintained by: System Admin - D.Della"
 echo "======================================"
