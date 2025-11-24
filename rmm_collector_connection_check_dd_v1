@@ -121,21 +121,21 @@ test_ssl() {
 }
 
 # --- Device Info ---
-echo "--- DEVICE INFORMATION ---"
+echo -e "${YELLOW}--- DEVICE INFORMATION ---${NC}"
 ip -4 addr show | grep inet
 
-echo "--- ROUTING TABLE ---"
+echo -e "${YELLOW}--- ROUTING TABLE ---${NC}"
 ip route show
 
-echo "--- INTERFACE STATUS ---"
+echo -e "${YELLOW}--- INTERFACE STATUS ---${NC}"
 ip link show
 
 # --- Trace Route ---
-echo "--- TRACE ROUTE TO portal.domotz.com ---"
+echo -e "${YELLOW}--- TRACE ROUTE TO portal.domotz.com ---${NC}"
 timeout 10 traceroute portal.domotz.com
 
 # --- Connectivity Checks ---
-echo "--- GENERAL CONNECTIVITY ---"
+echo -e "${YELLOW}--- GENERAL CONNECTIVITY ---${NC}"
 test_dns "portal.domotz.com"
 test_dns_fallback "portal.domotz.com"
 test_http "portal.domotz.com"
@@ -146,15 +146,15 @@ test_dns "echo.domotz.com"
 test_dns_fallback "echo.domotz.com"
 test_icmp "echo.domotz.com"
 
-echo "--- API CONNECTIVITY ---"
+echo -e "${YELLOW}--- API CONNECTIVITY ---${NC}"
 test_tcp_port "api-us-east-1-cell-1.domotz.com" 443
 test_tcp_port "api-eu-west-1-cell-1.domotz.com" 443
 
-echo "--- MESSAGING SERVICES ---"
+echo -e "${YELLOW}--- MESSAGING SERVICES ---${NC}"
 test_tcp_port "messaging-us-east-1-cell-1.domotz.com" 5671
 test_tcp_port "messaging-eu-west-1-cell-1.domotz.com" 5671
 
-echo "--- REMOTE CONNECTIONS ---"
+echo -e "${YELLOW}--- REMOTE CONNECTIONS ---${NC}"
 remote_hosts=(
   "sshg.domotz.co"
   "us-east-1-sshg.domotz.co"
@@ -171,7 +171,7 @@ for host in "${remote_hosts[@]}"; do
   done
 done
 
-echo "--- PROVISIONING CHANNEL ---"
+echo -e "${YELLOW}--- PROVISIONING CHANNEL ---${NC}"
 test_tcp_port "provisioning.domotz.com" 4505
 test_tcp_port "provisioning.domotz.com" 4506
 test_tcp_port "login.ubuntu.com" 443
@@ -180,7 +180,7 @@ test_tcp_port "messaging.orchestration.domotz.com" 5671
 test_tcp_port "api.orchestration.wl-pro.com" 443
 test_tcp_port "tunny.domotz.org" 55022
 
-echo "--- UPDATES FROM CANONICAL ---"
+echo -e "${YELLOW}--- UPDATES FROM CANONICAL ---${NC}"
 canonical_hosts=(
   "api.snapcraft.io"
   "serial-vault-partners.canonical.com"
@@ -195,13 +195,13 @@ for host in "${canonical_hosts[@]}"; do
   test_tcp_port "$host" 443
 done
 
-echo "--- HTTPS SERVERS ---"
+echo -e "${YELLOW}--- HTTPS SERVERS ---${NC}"
 https_hosts=("www.google.com" "www.fast.com" "www.canonical.com" "www.redhat.com")
 for host in "${https_hosts[@]}"; do
   test_tcp_port "$host" 443
 done
 
-echo "--- NTP SERVERS (UDP 123) ---"
+echo -e "${YELLOW}--- NTP SERVERS (UDP 123) ---${NC}"
 ntp_servers=("0.ubuntu.pool.ntp.org" "1.ubuntu.pool.ntp.org" "2.ubuntu.pool.ntp.org")
 
 for server in "${ntp_servers[@]}"; do
