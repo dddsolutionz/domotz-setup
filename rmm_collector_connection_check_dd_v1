@@ -144,7 +144,81 @@ ip link show
 echo -e "${YELLOW}--- TRACE ROUTE TO portal.domotz.com ---${NC}"
 timeout 10 traceroute portal.domotz.com
 
-# (rest of your connectivity checks remain unchanged...)
+# --- Connectivity Checks ---
+echo -e "${YELLOW}--- GENERAL CONNECTIVITY ---${NC}"
+test_dns "portal.domotz.com"
+test_dns_fallback "portal.domotz.com"
+test_http "portal.domotz.com"
+test_ssl "portal.domotz.com"
+test_tcp_port "portal.domotz.com" 443
+
+test_dns "echo.domotz.com"
+test_dns_fallback "echo.domotz.com"
+test_icmp "echo.domotz.com"
+
+echo -e "${YELLOW}--- API CONNECTIVITY ---${NC}"
+test_tcp_port "api-us-east-1-cell-1.domotz.com" 443
+test_tcp_port "api-eu-west-1-cell-1.domotz.com" 443
+
+echo -e "${YELLOW}--- MESSAGING SERVICES ---${NC}"
+test_tcp_port "messaging-us-east-1-cell-1.domotz.com" 5671
+test_tcp_port "messaging-eu-west-1-cell-1.domotz.com" 5671
+
+echo -e "${YELLOW}--- REMOTE CONNECTIONS ---${NC}"
+remote_hosts=(
+  "sshg.domotz.co"
+  "us-east-1-sshg.domotz.co"
+  "us-east-1-02-sshg.domotz.co"
+  "us-west-2-sshg.domotz.co"
+  "ap-southeast-2-sshg.domotz.co"
+)
+sample_ports=(32700 40000 50000 57699)
+
+for host in "${remote_hosts[@]}"; do
+  test_icmp "$host"
+  for port in "${sample_ports[@]}"; do
+    test_tcp_port "$host" "$port"
+  done
+done
+
+echo -e "${YELLOW}--- PROVISIONING CHANNEL ---${NC}"
+test_tcp_port "provisioning.domotz.com" 4505
+test_tcp_port "provisioning.domotz.com" 4506
+test_tcp_port "login.ubuntu.com" 443
+test_tcp_port "pool.sks-keyservers.net" 11371
+test_tcp_port "messaging.orchestration.domotz.com" 5671
+test_tcp_port "api.orchestration.wl-pro.com" 443
+test_tcp_port "tunny.domotz.org" 55022
+
+# --- UPDATES FROM CANONICAL ---
+echo -e "${YELLOW}--- UPDATES FROM CANONICAL ---${NC}"
+canonical_hosts=(
+  "api.snapcraft.io"
+  "serial-vault-partners.canonical.com"
+  "storage.snapcraftcontent.com"
+  "canonical-lgw01.cdn.snapcraftcontent.com"
+  "canonical-lcy01.cdn.snapcraftcontent.com"
+  "canonical-lcy02.cdn.snapcraftcontent.com"
+  "canonical-bos01.cdn.snapcraftcontent.com"
+  "upload.apps.ubuntu.com"
+)
+for host in "${canonical_hosts[@]}"; do
+  test_tcp_port "$host" 443
+done
+
+# --- HTTPS SERVERS ---
+echo -e "${YELLOW}--- HTTPS SERVERS ---${NC}"
+https_hosts=("www.google.com" "www.fast.com" "www.canonical.com" "www.redhat.com")
+for host in "${https_hosts[@]}"; do
+  test_tcp_port "$host" 443
+done
+
+# --- NTP SERVERS (UDP 123) ---
+echo -e "${YELLOW}--- NTP SERVERS (UDP 123) ---${NC}"
+ntp_servers=("0.ubuntu.pool.ntp.org" "1.ubuntu.pool.ntp.org" "2.ubuntu.pool.ntp.org")
+for server in "${ntp_servers[@]}"; do
+  test_udp_port "$server" 123
+done
 
 # --- Final timestamp and attribution ---
 echo "======================================"
