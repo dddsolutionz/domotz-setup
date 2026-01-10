@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================
 # Solutionz INC RMM Collector Image (Linux)
-# System Admin: D.Della
+# System Admin: Darrel Della
 # Last Updated: 2025-11-18
 # Description: Install and update the collector to Solutoinz RMM configuration.
 # Custom MOTD for Ubuntu Minimal Server
