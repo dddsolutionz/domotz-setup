@@ -267,11 +267,9 @@ sudo tee /etc/update-motd.d/slz-dd-login > /dev/null <<'EOF'
 # /etc/update-motd.d/slz-dd-login
 # Custom MOTD for Ubuntu Minimal Server
 
-# Colors
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# ASCII Banner
 cat << "BANNER"
   _____   ____    _      _    _   _____   _    ____   __     __
  / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  _____
