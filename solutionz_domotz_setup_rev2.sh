@@ -255,6 +255,68 @@ ps aux | grep '[a]getty' | grep ttyS0 || echo "Warning: agetty not detected on t
 
 echo "Serial console configuration completed."
 echo "------------------------------------------------------------"
+
+# Step 14
+step_message 13 "Update Banner"
+progress_message "Adding Banner"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# ASCII Banner
+cat << "EOF"
+  _____   ____    _      _    _   _____   _    ____   __     __
+ / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  _____
+| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___ /
+ \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |   / /
+ ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
+|_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
+EOF
+
+echo -e "${YELLOW}Welcome to the Solutionz RMM Collector Login.${NC}"
+echo "============================================================"
+echo "Solutionz RMM System Admin: Darrel Della '''\_(~_-)_/'''"
+echo "------------------------------------------------------------"
+
+# Hostnamectl info
+echo "Hostnamectl:"
+hostnamectl
+
+echo "------------------------------------------------------------"
+
+# Uptime, Kernel, CPU, Memory, Disk
+echo "Uptime:   $(uptime -p)"
+echo -e "${YELLOW}Kernel:   $(uname -r)${NC}"
+echo "CPU:      $(lscpu | grep 'Model name' | awk -F: '{print $2}' | xargs)"
+echo "Memory:   $(free -h | awk '/Mem:/ {print $3 \"/\" $2}')"
+echo "Disk:     $(df -h / | awk 'NR==2 {print $3\"/\"$2 \" used\"}')"
+
+# IP addresses
+IP_ADDR=$(hostname -I)
+echo "IP Addr:  $IP_ADDR"
+
+echo "============================================================"
+
+# System info summary
+echo " System information as of $(date)"
+echo ""
+echo "  System load:  $(uptime | awk -F'load average:' '{print $2}' | cut -d, -f1)"
+echo "  Usage of /:   $(df -h / | awk 'NR==2 {print $5}') of $(df -h / | awk 'NR==2 {print $2}')"
+echo "  Memory usage: $(free | awk '/Mem:/ {printf(\"%.0f%%\", $3/$2*100)}')"
+echo "  Swap usage:   $(free | awk '/Swap:/ {printf(\"%.0f%%\", $3/$2*100)}')"
+echo "  Processes:    $(ps -e | wc -l)"
+echo "  Users logged in: $(who | wc -l)"
+echo "  IPv4 address for eth0: $(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
+
+apt list --upgradable 2>/dev/null | grep -c upgradable | awk '{print $1 " updates can be applied immediately."}'
+echo "To see these additional updates run: apt list --upgradable"
+
+echo "============================================================"
+
 # Apply changes
 echo "GRUB updated. Rebooting system now..."
 read -p "Press Enter to reboot now or Ctrl+C to cancel..." < /dev/tty
