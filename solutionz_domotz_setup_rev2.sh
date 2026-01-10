@@ -262,7 +262,7 @@ echo "------------------------------------------------------------"
 step_message 14 "Update Banner"
 progress_message "Adding Banner"
 
-sudo nano /etc/update-motd.d/slz-dd-login
+sudo tee /etc/update-motd.d/slz-dd-login
 
 #!/bin/bash
 # /etc/update-motd.d/slz-dd-login
