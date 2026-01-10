@@ -268,45 +268,35 @@ sudo tee /etc/update-motd.d/slz-dd-login > /dev/null <<'EOF'
 # Custom MOTD for Ubuntu Minimal Server
 
 # Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # ASCII Banner
-cat << "EOF"
+cat << "BANNER"
   _____   ____    _      _    _   _____   _    ____   __     __
  / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  _____
 | (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___ /
  \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |   / /
  ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
 |_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
-EOF
+BANNER
 
 echo -e "${YELLOW}Welcome to the Solutionz RMM Collector Login.${NC}"
 echo "============================================================"
-echo "Solutionz RMM System Admin: Darrel Della '''\_(~_-)_/'''"
+echo "Solutionz RMM System Admin: Darrel Della"
 echo "------------------------------------------------------------"
 
-# Hostnamectl info
-echo "Hostnamectl:"
 hostnamectl
-
 echo "------------------------------------------------------------"
-
-# Uptime, Kernel, CPU, Memory, Disk
 echo "Uptime:   $(uptime -p)"
 echo -e "${YELLOW}Kernel:   $(uname -r)${NC}"
 echo "CPU:      $(lscpu | grep 'Model name' | awk -F: '{print $2}' | xargs)"
 echo "Memory:   $(free -h | awk '/Mem:/ {print $3 \"/\" $2}')"
 echo "Disk:     $(df -h / | awk 'NR==2 {print $3\"/\"$2 \" used\"}')"
-
-# IP addresses
-IP_ADDR=$(hostname -I)
-echo "IP Addr:  $IP_ADDR"
-
+echo "IP Addr:  $(hostname -I)"
 echo "============================================================"
+echo " System information as of $(date)"
+EOF
 
 sudo chmod +x /etc/update-motd.d/slz-dd-login
 
