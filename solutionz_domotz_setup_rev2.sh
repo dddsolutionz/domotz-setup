@@ -38,6 +38,7 @@ echo "10. Enable and start SSH service, install package lists..."
 echo "11. Adding hostnames solzrmm and solz-rmm if they do not exist"
 echo "12. Automatically append kernel parameters to GRUB config"
 echo "13. Configuring Serial Console Access on Protectli"
+echo "14. Update Banner"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
@@ -257,7 +258,7 @@ echo "Serial console configuration completed."
 echo "------------------------------------------------------------"
 
 # Step 14
-step_message 13 "Update Banner"
+step_message 14 "Update Banner"
 progress_message "Adding Banner"
 
 # Colors
