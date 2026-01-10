@@ -262,8 +262,7 @@ echo "------------------------------------------------------------"
 step_message 14 "Update Banner"
 progress_message "Adding Banner"
 
-sudo tee /etc/update-motd.d/slz-dd-login
-
+sudo tee /etc/update-motd.d/slz-dd-login > /dev/null <<'EOF'
 #!/bin/bash
 # /etc/update-motd.d/slz-dd-login
 # Custom MOTD for Ubuntu Minimal Server
