@@ -285,6 +285,7 @@ echo "Solutionz RMM System Admin: Darrel Della '''\_(~_-)_/'''"
 echo "------------------------------------------------------------"
 
 hostnamectl
+ip a
 echo "------------------------------------------------------------"
 echo "Uptime:   $(uptime -p)"
 echo -e "${YELLOW}Kernel:   $(uname -r)${NC}"
