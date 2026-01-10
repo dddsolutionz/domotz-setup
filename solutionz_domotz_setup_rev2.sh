@@ -262,6 +262,12 @@ echo "------------------------------------------------------------"
 step_message 14 "Update Banner"
 progress_message "Adding Banner"
 
+sudo nano /etc/update-motd.d/slz-dd-login
+
+#!/bin/bash
+# /etc/update-motd.d/slz-dd-login
+# Custom MOTD for Ubuntu Minimal Server
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -302,6 +308,8 @@ IP_ADDR=$(hostname -I)
 echo "IP Addr:  $IP_ADDR"
 
 echo "============================================================"
+
+sudo chmod +x /etc/update-motd.d/slz-dd-login
 
 # System info summary
 echo " System information as of $(date)"
