@@ -283,8 +283,8 @@ echo -e "${YELLOW}Welcome to the Solutionz RMM Collector Login.${NC}"
 echo "============================================================"
 echo "Solutionz RMM System Admin: Darrel Della '''\_(~_-)_/'''"
 echo "------------------------------------------------------------"
-
 hostnamectl
+echo "------------------------------------------------------------"
 ip a
 echo "------------------------------------------------------------"
 echo "Uptime:   $(uptime -p)"
