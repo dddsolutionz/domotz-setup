@@ -4,6 +4,8 @@
 # System Admin: D.Della
 # Last Updated: 2025-11-18
 # Description: Install and update the collector to Solutoinz RMM configuration.
+# /etc/update-motd.d/slz-dd-login
+# Custom MOTD for Ubuntu Minimal Server
 # ============================
 
 set -e
