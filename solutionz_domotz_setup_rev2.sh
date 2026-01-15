@@ -3,7 +3,7 @@
 # Solutionz INC RMM Collector Image (Linux)
 # System Admin: Darrel Della
 # Last Updated: 2025-11-18
-# Description: Install and update the collector to Solutoinz RMM configuration.
+# Description: Install and update the collector to Solutionz RMM configuration.
 # Custom MOTD for Ubuntu Minimal Server
 # ============================
 
