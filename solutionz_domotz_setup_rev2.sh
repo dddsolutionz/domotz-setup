@@ -8,7 +8,7 @@
 # ============================
 
 set -e
-exec > >(tee -i setup.log)
+exec > >(tee -i RMM Collector.log)
 exec 2>&1
 
 # --- Display logo and welcome ---
@@ -43,7 +43,7 @@ echo "14. Update Banner"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
-echo "1. Purpose: This script is designed for a fresh installation of Ubuntu Server 24.04."
+echo "1. Purpose: This script is designed for Solutionz RMM Collector, created by Darrel Della, RMM Engineer."
 echo "2. By proceeding, you confirm that:"
 echo "   - The script will modify system configurations and install necessary packages."
 echo "   - It may update system files and settings as per its instructions."
@@ -324,7 +324,7 @@ echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
 echo "   [+] Completion Time: $(date)"
 echo "   [+] Hostname: $(hostname)"
-echo "   [+] Script Version: v1.0"
+echo "   [+] Script Version: v2.0"
 echo "------------------------------------------------------------"
 
 sudo update-grub
