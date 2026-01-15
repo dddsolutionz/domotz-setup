@@ -7,7 +7,7 @@
 # ============================
 
 # Define log file path
-LOG_FILE="/var/log/rmm_config_check.log"
+LOG_FILE="/var/log/RMM_Config_Check.log"
 
 # Define ANSI color codes
 RED='\033[0;31m'
@@ -32,12 +32,12 @@ colorize() {
 echo -e "\033[36m"
 cat <<'EOF'
 
-  _____   ____    _      _    _   _____   _    ____   __     __
- / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ |  \   |  |  _____
-| (___  | |  | | | |    | |  | |   | |   | | | |  | ||   \  |  | |___ /
- \___ \ | |  | | | |    | |  | |   | |   | | | |  | ||  |\ \|  |   / /
- ____) || |__| | | |___ | |__| |   | |   | | | |__| ||  | \    |  / /__
-|_____/  \____/  |_____| \____/    |_|   |_|  \____/ |__|   \__| /_____|
+  _____   ____    _      _    _   _____   _    ____   _     __
+ / ____| / __ \  | |    | |  | | |_   _| | |  / __ \ | \   | |  _____
+| (___  | |  | | | |    | |  | |   | |   | | | |  | ||  \  | | |___ /
+ \___ \ | |  | | | |    | |  | |   | |   | | | |  | || |\ \| |   / /
+ ____) || |__| | | |___ | |__| |   | |   | | | |__| || | \   |  / /__
+|_____/  \____/  |_____| \____/    |_|   |_|  \____/ |_|   \_| /_____|
 
 Welcome to the Solutionz INC diagnostic script.
 EOF
@@ -124,5 +124,5 @@ echo -e "${YELLOW}===== End of RMM Configuration Check =====${NC}"
 echo "======================================"
 echo "Log completed at: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Log saved to: $LOG_FILE"
-echo "Script maintained by: System Admin - D.Della"
+echo "Script maintained by: RMM System Admin - Darrel Della"
 echo "======================================"
