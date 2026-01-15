@@ -34,7 +34,7 @@ else
 fi
 
 # --- Log setup ---
-log_file="/var/log/RMM_Connectivity_Log.txt"
+log_file="/var/log/RMM_Connection_Check.txt"
 {
   echo "===== RMM Connectivity Check Log ====="
   echo "Log started at: $(date '+%Y-%m-%d %H:%M:%S')"
